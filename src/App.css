@@ -1,0 +1,124 @@
+#root {
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #2E1572;
+  color: #FFFFFF;
+  font-family: 'system-ui', Avenir, Helvetica, Arial, sans-serif;
+}
+/* Carousel Styles */
+#BorderCarousel {
+  border: 4px solid #DEB831;
+  border-radius: 12px;
+  padding: 10px;
+  margin: 0px 50px 20px 50px;
+}
+
+.thumbnail {
+  width: 140px;
+  cursor: pointer;
+  opacity: 0.6;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  margin: 0;
+}
+
+.thumbnail.active {
+  opacity: 1;
+  border-color: #DEB831;
+}
+.thumbnail:hover {
+  opacity: 1;
+}
+@media (max-width: 1156px) {
+  .thumbnail {
+    width: 120px;
+  }
+}
+@media (max-width: 1007px) {
+  .thumbnail {
+    width: 100px;
+  }
+}
+@media (max-width: 867px){
+  #BorderCarousel {
+    margin: 0px 30px 20px 30px;
+  }
+  .thumbnail {
+    width: 85px;
+  }
+}
+@media (max-width: 768px) {
+  #BorderCarousel {
+    margin: 0px 10px 10px 10px;
+  }
+  .thumbnail {
+    display: none;
+  }
+}
+/* PresentacionFC Styles */
+#phrase {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: 1.25rem;
+  font-style: normal;
+  opacity: 0.6;
+}
+#title {
+  font-family: "Baloo 2", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-size: 4rem;
+  font-style: normal;
+}
+#description {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: 1.10rem;
+  font-style: normal;
+}
+#subtitle {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-size: 1rem;
+  font-style: normal;
+  opacity: 0.8;
+}
+/* Separator Styles */
+.separator {
+  height: 2px;
+  background-color: #DEB831;
+  margin: 40px 0;
+}
+.separator-small {
+  height: 2px;
+  background-color: #DEB831;
+  width: 100px;
+  margin: 1px auto;
+  opacity: 0.6;
+}
+/*Cursos Styles */
+.courses-title {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-style: normal;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+.course-title {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+  font-size: 1.5rem;
+}
+
+
+
+
+
+
+

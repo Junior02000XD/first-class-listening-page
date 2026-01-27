@@ -1,0 +1,47 @@
+:root {
+  line-height: 1.5;
+
+  color: #FFFFFF;
+  background-color: #1A0D4A;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/*button Styles */
+.btn-primary {
+  background-color: #DEB831;
+  border-color: #DEB831;
+}
+.btn-primary:hover {
+  background-color: #c4a123;
+  border-color: #c4a123;
+}
+.btn-outline-secondary {
+  color: #c4a123;
+  border-color: #c4a123;
+}
+.btn-outline-secondary:hover {
+  background-color: #c4a123;
+  color: #1A0D4A;
+  border-color: #c4a123;
+}
+.btn {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-size: 1rem;
+  font-style: normal;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+.btn-outline-secondary:active{
+  background-color: #a0841e !important;
+  color: #1A0D4A !important;
+  border-color: #a0841e !important;
+}
+.btn-primary:active{
+  background-color: #a0841e !important;
+  border-color: #a0841e !important;
+}

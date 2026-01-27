@@ -1,0 +1,70 @@
+.navbar-custom {
+  background-color: #2E1572;
+}
+
+.navbar-custom .navbar-brand {
+  color: #ffffff;
+}
+.navbar-custom .nav-link.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+.navbar-custom .nav-link{
+  color: gray;
+}
+
+
+.navbar-custom .nav-link:hover {
+  color: #00d4ff;
+}
+
+.navbar-title{
+  font-family: "Baloo 2", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 800;
+  font-size: 2rem;
+  font-style: normal;
+}
+.navbar-navigation {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-size: 1rem;
+  font-style: normal;
+}
+/* User Dropdown Styles */
+.user-dropdown{
+  background-color: #2E1572;
+  color: #c4a123;
+  border-color: #c4a123;
+}
+.user-dropdown:hover,
+.user-dropdown:focus,
+.user-dropdown.show {
+  background-color: #c4a123 !important;
+  color: #ffffff !important;
+  border-color: #c4a123 !important;
+}
+.user-dropdown:active {
+  background-color: #a0841e !important;
+  color: #ffffff !important;
+  border-color: #a0841e !important;
+}
+
+.menu-dropdown-custom{
+  background-color: #c4a123;
+}
+
+.dropdown-item{
+  background-color: #c4a123;
+  color: #ffffff;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: #DEB831 !important;
+  color: #ffffff !important;
+}
+.dropdown-item:active {
+  background-color: #a0841e !important;
+  color: #ffffff !important;
+}

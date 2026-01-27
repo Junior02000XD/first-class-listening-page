@@ -1,0 +1,19 @@
+/* Separator Styles */
+.separator-small-left {
+  height: 2px;
+  background-color: #DEB831;
+  width: 100px;
+  margin: 1px;
+}
+.separator-small {
+  height: 2px;
+  background-color: #DEB831;
+  width: 100px;
+  margin: 1px auto;
+  opacity: 0.6;
+}
+
+.btn-custom:hover {
+  color: #fff !important;
+}
+

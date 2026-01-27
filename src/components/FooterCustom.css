@@ -1,0 +1,24 @@
+.footer-custom {
+  background-color: #1A0D4A;
+  color: #ffffff;
+}
+
+.footer-title {
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 700;
+}
+
+.footer-text {
+  color: #cfcfcf;
+}
+
+.footer-link {
+  color: #cfcfcf;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-link:hover {
+  color: #DEB831;
+  text-decoration: underline;
+}

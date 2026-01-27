@@ -1,0 +1,46 @@
+.login-card {
+  max-width: 360px;
+  width: 100%;
+  border-radius: 12px;
+  background-color: #1A0D4A !important;
+  color: #fff !important;
+  font-family: Inter, sans-serif;
+}
+.description-text {
+  font-size: 0.9rem;
+  opacity: 0.6;
+  color: #fff !important;
+}
+.divider {
+  position: relative;
+  text-align: center;
+}
+
+.divider span {
+  padding: 0 5px;
+  color: #fff !important;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #dee2e6;
+  z-index: -1;
+}
+
+.forgot-link {
+  font-size: 0.9rem;
+  color: #fff !important;
+  text-decoration: none;
+  opacity: 0.8;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
