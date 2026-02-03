@@ -26,11 +26,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // Solo limpiamos los datos, pero NO redirigimos automáticamente aquí
+        // para permitir que componentes como CursoItem manejen el error 401 a su manera
         if (error.response && error.response.status === 401) {
-            // Si la API dice que el token no sirve, cerramos sesión
             localStorage.removeItem("token");
             localStorage.removeItem("userData");
-            window.location.href = "/login"; 
+            
+            // Opcional: Solo redirigir si NO estamos en la página de un curso
+            if (!window.location.pathname.includes("/Cursos/")) {
+                window.location.href = "/login";
+            }
         }
         return Promise.reject(error);
     }

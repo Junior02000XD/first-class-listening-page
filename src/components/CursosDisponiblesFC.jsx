@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
-// Tu URL de R2 Público
 const R2_PUBLIC_URL = "https://pub-c366ad600966461483237465e4989b76.r2.dev";
 
 export function CursosDisponiblesFC({ soloMios = false }) {
@@ -16,10 +15,10 @@ export function CursosDisponiblesFC({ soloMios = false }) {
     useEffect(() => {
         const fetchCursos = async () => {
             try {
+                // Endpoint público para ver el catálogo
                 const response = await api.get("/cursos");
                 let data = response.data;
 
-                // Lógica de filtro "Mis Cursos"
                 if (soloMios && isAuthenticated && user?.misCursos) {
                     const idsMios = user.misCursos.map(c => c.id);
                     data = data.filter(curso => idsMios.includes(curso.id));
@@ -42,7 +41,7 @@ export function CursosDisponiblesFC({ soloMios = false }) {
         <Container className="my-5">
             <Row ms={1} md={2} lg={3} className="justify-content-center">
                 {cursos.map((curso) => {
-                    // Verificamos si el usuario ya es dueño del curso
+                    // Verificamos si el usuario ya es dueño del curso para efectos visuales del botón
                     const yaLoTengo = user?.misCursos?.some(mio => mio.id === curso.id);
 
                     return (
@@ -55,6 +54,7 @@ export function CursosDisponiblesFC({ soloMios = false }) {
                             <h5 className="text-center course-title">{curso.titulo}</h5>
                             <div className="separator-small"></div>
                             
+                            {/* Ambos botones ahora redirigen al mismo lugar */}
                             <button 
                                 className={`btn ${yaLoTengo ? "btn-success" : "btn-outline-secondary"} mt-2`}
                                 onClick={() => navigate(`/Cursos/${curso.id}`)}
