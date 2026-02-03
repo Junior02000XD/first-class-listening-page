@@ -1,44 +1,73 @@
-import { Col, Container, Row } from "react-bootstrap";
+import { useEffect, useState, useContext } from "react";
+import { Col, Container, Row, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import api from "../api/axios";
 
-export function CursosDisponiblesFC() {
-    const cursos = [
-        { id: 1, titulo: "First Class 1", img: "/CursosImages/EnglishFirst_1.jpeg"},
-        { id: 2, titulo: "First Class 2", img: "/CursosImages/EnglishFirst_2.jpeg"},
-        { id: 3, titulo: "First Class 3", img: "/CursosImages/EnglishFirst_3.jpeg"},
-        { id: 4, titulo: "First Class 4", img: "/CursosImages/EnglishFirst_4.jpeg"},
-        { id: 5, titulo: "First Class 5", img: "/CursosImages/EnglishFirst_5.jpeg"},
-        { id: 6, titulo: "First Class 6", img: "/CursosImages/EnglishFirst_6.jpeg"},
-        { id: 7, titulo: "First Class 7", img: "/CursosImages/EnglishFirst_7.jpeg"},
-        { id: 8, titulo: "First Class Kids 1", img: "/CursosImages/EnglishFirstKids_1.jpeg"},
-        { id: 9, titulo: "First Class Kids 2", img: "/CursosImages/EnglishFirstKids_2.jpeg"},
-        { id: 10, titulo: "First Class Kids 3", img: "/CursosImages/EnglishFirstKids_3.jpeg"},
-        { id: 11, titulo: "First Class Kids 4", img: "/CursosImages/EnglishFirstKids_4.jpeg"},
-        { id: 12, titulo: "First Class Kids 5", img: "/CursosImages/EnglishFirstKids_5.jpeg"},
-        { id: 13, titulo: "First Class Kids 6", img: "/CursosImages/EnglishFirstKids_6.jpeg"},
-        { id: 14, titulo: "First Class Kids 7", img: "/CursosImages/EnglishFirstKids_7.jpeg"},
-    ];
-    const Navigate = useNavigate();
-    
-  return (
-    <Container className="my-5">
-        <Row ms={1} md={2} lg={3} className="justify-content-center">
-            {cursos.map((curso) => (
-                <Col key={curso.id} xs={12} className="mb-4 text-center">
-                    <img
-                        src={curso.img}
-                        alt={curso.titulo}
-                        className="img-fluid rounded mb-2"
-                    />
-                    <h5 className="text-center course-title">{curso.titulo}</h5>
-                    <div className="separator-small"></div>
-                    <button className="btn btn-outline-secondary mt-2" 
-                        onClick={() => Navigate(`/Cursos/${curso.id}`)}>
-                        Saber Más
-                    </button>
-                </Col>
-            ))}
-        </Row>
-    </Container>
+// Tu URL de R2 Público
+const R2_PUBLIC_URL = "https://pub-c366ad600966461483237465e4989b76.r2.dev";
+
+export function CursosDisponiblesFC({ soloMios = false }) {
+    const [cursos, setCursos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user, isAuthenticated } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchCursos = async () => {
+            try {
+                const response = await api.get("/cursos");
+                let data = response.data;
+
+                // Lógica de filtro "Mis Cursos"
+                if (soloMios && isAuthenticated && user?.misCursos) {
+                    const idsMios = user.misCursos.map(c => c.id);
+                    data = data.filter(curso => idsMios.includes(curso.id));
+                }
+
+                setCursos(data);
+            } catch (error) {
+                console.error("Error cargando cursos:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCursos();
+    }, [soloMios, isAuthenticated, user]);
+
+    if (loading) return <div className="text-center my-5"><Spinner animation="border" /></div>;
+
+    return (
+        <Container className="my-5">
+            <Row ms={1} md={2} lg={3} className="justify-content-center">
+                {cursos.map((curso) => {
+                    // Verificamos si el usuario ya es dueño del curso
+                    const yaLoTengo = user?.misCursos?.some(mio => mio.id === curso.id);
+
+                    return (
+                        <Col key={curso.id} xs={12} className="mb-4 text-center">
+                            <img
+                                src={curso.imagenUrl.startsWith('http') ? curso.imagenUrl : `${R2_PUBLIC_URL}/${curso.imagenUrl}`}
+                                alt={curso.titulo}
+                                className="img-fluid rounded mb-2"
+                            />
+                            <h5 className="text-center course-title">{curso.titulo}</h5>
+                            <div className="separator-small"></div>
+                            
+                            <button 
+                                className={`btn ${yaLoTengo ? "btn-success" : "btn-outline-secondary"} mt-2`}
+                                onClick={() => navigate(`/Cursos/${curso.id}`)}
+                            >
+                                {yaLoTengo ? "Entrar al Curso" : "Saber Más"}
+                            </button>
+                        </Col>
+                    );
+                })}
+            </Row>
+            {soloMios && cursos.length === 0 && (
+                <p className="text-center text-muted">Aún no has activado ningún curso con tu código.</p>
+            )}
+        </Container>
     );
 }

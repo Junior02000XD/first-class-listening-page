@@ -1,5 +1,5 @@
 import { Navbar } from 'react-bootstrap';
-import LoginSelectorFC from './components/LoginSelectorFC';
+import { LoginSelectorFC } from './components/LoginSelectorFC';
 import './Login.css';
 import NavbarFC from './components/NavbarFC';
 import FooterFC from './components/FooterFC';
