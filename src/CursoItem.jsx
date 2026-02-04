@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react"; // Añadido useContext
+import { useEffect, useState, useCallback } from "react"; 
 import NavbarFC from "./components/NavbarFC";
 import FooterFC from "./components/FooterFC";
-import CodeInputFC from "./components/CodeInputFC"; // Importamos el componente de código
+import CodeInputFC from "./components/CodeInputFC"; 
 import api from "./api/axios"; 
 import { Spinner } from "react-bootstrap";
 import './CursoItem.css';
@@ -17,51 +17,50 @@ export function CursoItem() {
     const [audioActivo, setAudioActivo] = useState(null);
     const [downloadsLeft, setDownloadsLeft] = useState(0);
     const [loading, setLoading] = useState(true);
-    const [tieneAcceso, setTieneAcceso] = useState(false); // Estado para controlar el bloqueo
+    const [tieneAcceso, setTieneAcceso] = useState(false);
 
     const WORKER_URL = "https://first-class-listening-worker.juliocesarcruzkubber.workers.dev"; 
 
-    useEffect(() => {
-        const cargarDetalle = async () => {
-            try {
-                // 1. Intentamos el acceso privado (Requiere Login y Canje)
-                const res = await api.get(`/audio-access/curso/${id}`);
-                
-                setCurso({
-                    id: res.data.id,
-                    titulo: res.data.titulo,
-                    img: res.data.imagenUrl
-                });
-                setAudios(res.data.audios || []);
-                setCourseToken(res.data.token);
-                setDownloadsLeft(res.data.descargasRestantes ?? 3);
-                setTieneAcceso(true); 
+    // 1. Envolvemos la carga en useCallback para poder re-ejecutarla tras un canje exitoso
+    const cargarDetalle = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await api.get(`/audio-access/curso/${id}`);
+            
+            setCurso({
+                id: res.data.id,
+                titulo: res.data.titulo,
+                img: res.data.imagenUrl
+            });
+            setAudios(res.data.audios || []);
+            setCourseToken(res.data.token);
+            setDownloadsLeft(res.data.descargasRestantes ?? 3);
+            setTieneAcceso(true); 
 
-            } catch (err) {
-                // 2. Si falla por falta de login (401) o falta de canje (403)
-                if (err.response?.status === 401 || err.response?.status === 403) {
-                    try {
-                        // Llamamos a la API pública para mostrar la portada
-                        const resPublico = await api.get(`/cursos/${id}`);
-                        setCurso({
-                            id: resPublico.data.id,
-                            titulo: resPublico.data.titulo,
-                            img: resPublico.data.imagenUrl
-                        });
-                        setTieneAcceso(false); // Bloquea audios y muestra CodeInputFC
-                    } catch {
-                        navigate("/Cursos");
-                    }
-                } else {
+        } catch (err) {
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                try {
+                    const resPublico = await api.get(`/cursos/${id}`);
+                    setCurso({
+                        id: resPublico.data.id,
+                        titulo: resPublico.data.titulo,
+                        img: resPublico.data.imagenUrl
+                    });
+                    setTieneAcceso(false);
+                } catch {
                     navigate("/Cursos");
                 }
-            } finally {
-                setLoading(false);
+            } else {
+                navigate("/Cursos");
             }
-        };
-        cargarDetalle();
+        } finally {
+            setLoading(false);
+        }
     }, [id, navigate]);
 
+    useEffect(() => {
+        cargarDetalle();
+    }, [cargarDetalle]);
 
     const handleDownload = async () => {
         if (!audioActivo) return;
@@ -74,6 +73,8 @@ export function CursoItem() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            // Actualizamos localmente para no pedir a la API otra vez
             setDownloadsLeft(prev => prev - 1);
         } catch (err) {
             alert(err.response?.data?.mensaje || "Error al procesar la descarga");
@@ -98,7 +99,6 @@ export function CursoItem() {
                     </div>
 
                     <div className="container">
-                        {/* LOGICA DE ACCESO CONDICIONAL */}
                         {tieneAcceso ? (
                             <div className="row g-4">
                                 <div className="col-12 col-md-8">
@@ -144,16 +144,15 @@ export function CursoItem() {
                                 </div>
                             </div>
                         ) : (
-                            /* MOSTRAR INPUT DE CODIGO SI NO HAY ACCESO */
                             <div className="text-center py-5">
                                 <div className="alert alert-warning mb-4">No tienes acceso a los audios de este curso.</div>
-                                <CodeInputFC />
+                                {/* 2. Pasamos la función de recarga como Prop para que al canjear se desbloquee todo */}
+                                <CodeInputFC onSuccess={cargarDetalle} />
                             </div>
                         )}
                     </div>
                 </div>
             )}
-
             <FooterFC />
         </>
     );

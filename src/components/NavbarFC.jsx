@@ -50,7 +50,7 @@ export function NavbarFC() {
                 Hola, {user?.nombre || "Usuario"}
               </Dropdown.Toggle>
               <Dropdown.Menu className='menu-dropdown-custom' align="end">
-                <Dropdown.Item as={Link} to="/mis-cursos" className='dropdown-item-custom'>
+                <Dropdown.Item as={Link} to="/cursos" className='dropdown-item-custom'>
                   Mis Cursos
                 </Dropdown.Item>
                 

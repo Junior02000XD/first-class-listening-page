@@ -9,22 +9,46 @@ const R2_PUBLIC_URL = "https://pub-c366ad600966461483237465e4989b76.r2.dev";
 export function CursosDisponiblesFC({ soloMios = false }) {
     const [cursos, setCursos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { user, isAuthenticated } = useContext(AuthContext);
+    const { isAuthenticated } = useContext(AuthContext); // Ya no dependemos del objeto 'user' aquí
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchCursos = async () => {
+        const fetchDatos = async () => {
             try {
-                // Endpoint público para ver el catálogo
-                const response = await api.get("/cursos");
-                let data = response.data;
+                // 1. Cargamos el catálogo completo (Endpoint Público)
+                const resCatalogo = await api.get("/cursos");
+                let catalogoTotal = resCatalogo.data;
 
-                if (soloMios && isAuthenticated && user?.misCursos) {
-                    const idsMios = user.misCursos.map(c => c.id);
-                    data = data.filter(curso => idsMios.includes(curso.id));
+                let idsMisCursos = [];
+
+                // 2. Si está logueado, consultamos sus accesos reales a la API
+                if (isAuthenticated) {
+                    try {
+                        const resMios = await api.get("/audio-access/mis-cursos");
+                        // Guardamos solo los IDs para hacer el "match" fácilmente
+                        idsMisCursos = resMios.data.map(c => c.id || c.Id);
+                    } catch (errMios) {
+                        console.error("Error obteniendo cursos del usuario:", errMios);
+                    }
                 }
 
-                setCursos(data);
+                // 3. Inyectamos la propiedad 'yaLoTengo' en cada curso del catálogo
+                const dataProcesada = catalogoTotal.map(curso => {
+                    const cursoId = curso.id || curso.Id; // Normalizamos el ID aquí
+                    return {
+                        ...curso,
+                        id: cursoId, // Forzamos que siempre exista 'id' en minúscula
+                        yaLoTengo: idsMisCursos.includes(cursoId)
+                    };
+                });
+
+                // 4. Si la prop es 'soloMios', filtramos el resultado final
+                if (soloMios) {
+                    setCursos(dataProcesada.filter(c => c.yaLoTengo));
+                } else {
+                    setCursos(dataProcesada);
+                }
+
             } catch (error) {
                 console.error("Error cargando cursos:", error);
             } finally {
@@ -32,8 +56,8 @@ export function CursosDisponiblesFC({ soloMios = false }) {
             }
         };
 
-        fetchCursos();
-    }, [soloMios, isAuthenticated, user]);
+        fetchDatos();
+    }, [soloMios, isAuthenticated]);
 
     if (loading) return <div className="text-center my-5"><Spinner animation="border" /></div>;
 
@@ -41,25 +65,26 @@ export function CursosDisponiblesFC({ soloMios = false }) {
         <Container className="my-5">
             <Row ms={1} md={2} lg={3} className="justify-content-center">
                 {cursos.map((curso) => {
-                    // Verificamos si el usuario ya es dueño del curso para efectos visuales del botón
-                    const yaLoTengo = user?.misCursos?.some(mio => mio.id === curso.id);
-
+                    // Ahora 'yaLoTengo' viene calculado directamente desde la API
                     return (
                         <Col key={curso.id} xs={12} className="mb-4 text-center">
                             <img
+                                key={`img-${curso.id}`} // Forzamos a React a identificar la imagen de forma única
                                 src={curso.imagenUrl.startsWith('http') ? curso.imagenUrl : `${R2_PUBLIC_URL}/${curso.imagenUrl}`}
                                 alt={curso.titulo}
                                 className="img-fluid rounded mb-2"
+                                crossOrigin="anonymous"
+                                loading="lazy" 
                             />
+
                             <h5 className="text-center course-title">{curso.titulo}</h5>
                             <div className="separator-small"></div>
                             
-                            {/* Ambos botones ahora redirigen al mismo lugar */}
                             <button 
-                                className={`btn ${yaLoTengo ? "btn-success" : "btn-outline-secondary"} mt-2`}
+                                className={`btn ${curso.yaLoTengo ? "btn-success" : "btn-outline-secondary"} mt-2`}
                                 onClick={() => navigate(`/Cursos/${curso.id}`)}
                             >
-                                {yaLoTengo ? "Entrar al Curso" : "Saber Más"}
+                                {curso.yaLoTengo ? "Entrar al Curso" : "Saber Más"}
                             </button>
                         </Col>
                     );

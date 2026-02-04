@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useContext } from "react";
-import { Container, Card, Button, Form, Spinner } from "react-bootstrap";
+import { Container, Card, Button, Form, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import api from "../api/axios";
@@ -9,7 +9,17 @@ export function LoginSelectorFC() {
   const [view, setView] = useState("selector");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [formData, setFormData] = useState({ email: "", password: "", nombre: "", apellido: "" });
+  
+  // Estado ampliado para el registro completo
+  const [formData, setFormData] = useState({ 
+    email: "", 
+    password: "", 
+    nombre: "", 
+    apellido: "",
+    pais: "",
+    ciudad: "",
+    fechaNacimiento: "" // Formato YYYY-MM-DD
+  });
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,11 +30,15 @@ export function LoginSelectorFC() {
     try {
       const res = await api.post("/usuarios/login", {
         email: "", 
-        tipo: 1, 
+        tipo: 1, // Google
         valor: response.credential 
       });
       login(res.data);
-      if (pendingCode) await api.post(`/codigos/canjear/${pendingCode}`);
+      
+      // Proceso de Canje post-login
+      if (pendingCode) {
+        await api.post(`/codigos/canjear/${pendingCode}`);
+      }
       navigate("/cursos");
     } catch {
       setError("Error al autenticar con Google.");
@@ -47,9 +61,9 @@ export function LoginSelectorFC() {
           google.accounts.id.renderButton(btnContainer, { 
             theme: "outline", 
             size: "large", 
-            width: btnContainer.offsetWidth, // Forzamos el ancho del contenedor padre
+            width: btnContainer.offsetWidth,
             text: "continue_with",
-            shape: "rectangular" // Hace que se vea más integrado con tus otros botones
+            shape: "rectangular"
           });
         }
       }
@@ -65,18 +79,43 @@ export function LoginSelectorFC() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
     try {
        const endpoint = view === "login" ? "/usuarios/login" : "/usuarios/register";
+       
+       // Construcción del Payload según tu DTO de C#
        const payload = view === "login" 
            ? { email: formData.email, valor: formData.password, tipo: 0 } 
-           : { ...formData, valor: formData.password, tipo: 0, pais: "N/A", ciudad: "N/A" };
+           : { 
+               nombre: formData.nombre,
+               apellido: formData.apellido,
+               pais: formData.pais,
+               ciudad: formData.ciudad,
+               fechaCumpleaños: formData.fechaNacimiento, // Mapeado a tu DTO
+               rol: 2, // User
+               email: formData.email,
+               valor: formData.password,
+               tipo: 0 // Local
+             };
        
        const res = await api.post(endpoint, payload);
+       
+       // 1. Iniciar sesión globalmente
        login(res.data);
-       if (pendingCode) await api.post(`/codigos/canjear/${pendingCode}`);
+
+       // 2. Canje automático si existe código pendiente
+       if (pendingCode) {
+         try {
+           await api.post(`/codigos/canjear/${pendingCode}`);
+         } catch (redeemErr) {
+           console.error("Error al canjear código tras registro:", redeemErr);
+           // Nota: El usuario ya está logueado, el canje falló pero la sesión es válida
+         }
+       }
+       
        navigate("/cursos");
     } catch (err) {
-       setError(err.response?.data?.mensaje || "Error en credenciales.");
+       setError(err.response?.data?.mensaje || "Error en la operación. Revisa los datos.");
     } finally { setLoading(false); }
   };
 
@@ -92,12 +131,9 @@ export function LoginSelectorFC() {
             Crear cuenta nueva
           </Button>
           <div className="divider my-3"><span>o</span></div>
-          
-          {/* Ajuste de estilo para asegurar centrado y ancho */}
           <div className="d-flex justify-content-center">
             <div id="googleBtn" style={{ width: '100%' }}></div>
           </div>
-          
           {loading && <Spinner animation="border" size="sm" className="mt-2" />}
           {error && <p className="text-danger small mt-2">{error}</p>}
         </Card>
@@ -107,21 +143,43 @@ export function LoginSelectorFC() {
 
   return (
     <Container className="d-flex justify-content-center my-5">
-      <Card className="login-card p-4" style={{ maxWidth: '400px', width: '100%' }}>
-        <Button variant="link" className="p-0 mb-3" onClick={() => setView("selector")}>← Volver</Button>
-        <h4 className="mb-4">{view === "login" ? "Login" : "Registro"}</h4>
+      <Card className="login-card p-4" style={{ maxWidth: '450px', width: '100%' }}>
+        <Button variant="link" className="p-0 mb-3 text-decoration-none" onClick={() => setView("selector")}>← Volver</Button>
+        <h4 className="mb-4 fw-bold">{view === "login" ? "¡Hola de nuevo!" : "Crea tu cuenta"}</h4>
+        
         <Form onSubmit={handleSubmit}>
           {view === "register" && (
-            <div className="d-flex gap-2 mb-2">
-              <Form.Control placeholder="Nombre" required onChange={e => setFormData({...formData, nombre: e.target.value})} />
-              <Form.Control placeholder="Apellido" required onChange={e => setFormData({...formData, apellido: e.target.value})} />
-            </div>
+            <>
+              <Row className="mb-2">
+                <Col>
+                  <Form.Control placeholder="Nombre" required onChange={e => setFormData({...formData, nombre: e.target.value})} />
+                </Col>
+                <Col>
+                  <Form.Control placeholder="Apellido" required onChange={e => setFormData({...formData, apellido: e.target.value})} />
+                </Col>
+              </Row>
+              <Row className="mb-2">
+                <Col>
+                  <Form.Control placeholder="País" required onChange={e => setFormData({...formData, pais: e.target.value})} />
+                </Col>
+                <Col>
+                  <Form.Control placeholder="Ciudad" required onChange={e => setFormData({...formData, ciudad: e.target.value})} />
+                </Col>
+              </Row>
+              <Form.Group className="mb-2">
+                <Form.Label className="small text-muted mb-1">Fecha de Nacimiento</Form.Label>
+                <Form.Control type="date" required onChange={e => setFormData({...formData, fechaNacimiento: e.target.value})} />
+              </Form.Group>
+            </>
           )}
+
           <Form.Control type="email" placeholder="Email" className="mb-2" required onChange={e => setFormData({...formData, email: e.target.value})} />
           <Form.Control type="password" placeholder="Contraseña" className="mb-3" required onChange={e => setFormData({...formData, password: e.target.value})} />
+          
           {error && <p className="text-danger small">{error}</p>}
-          <Button variant="primary" type="submit" className="w-100" disabled={loading}>
-            {loading ? <Spinner size="sm" /> : "Continuar"}
+          
+          <Button variant="primary" type="submit" className="w-100 fw-bold" disabled={loading}>
+            {loading ? <Spinner size="sm" /> : (view === "login" ? "Entrar" : "Registrarme")}
           </Button>
         </Form>
       </Card>

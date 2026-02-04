@@ -1,13 +1,14 @@
-import { Col, Container, Row, Button, Form } from "react-bootstrap";
+import { Col, Container, Row, Button, Form, Alert } from "react-bootstrap";
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
-import api from "../api/axios"; // Importamos nuestro cliente configurado
+import api from "../api/axios";
 
-export function CodeInputFC() {
+export function CodeInputFC({ onSuccess }) { // Recibimos onSuccess como prop
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(""); // Estado para mensaje de éxito
   
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
@@ -16,8 +17,8 @@ export function CodeInputFC() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccess("");
 
-    // 1. Validación de formato (Coincide con los 9 caracteres de tu API)
     if (!/^[A-Za-z0-9]{9}$/.test(code)) {
       setError("Código inválido. Debe tener 9 caracteres alfanuméricos.");
       setLoading(false);
@@ -25,8 +26,6 @@ export function CodeInputFC() {
     }
 
     try {
-      // 2. Verificar si el código es válido/existe en PostgreSQL
-      // Usamos el endpoint GET api/codigos/verificar/{valor}
       const response = await api.get(`/codigos/verificar/${code}`);
       
       if (!response.data.valido) {
@@ -35,18 +34,23 @@ export function CodeInputFC() {
         return;
       }
 
-      // 3. Lógica de redirección según autenticación
       if (!isAuthenticated) {
-        // Guardamos el código en el state para canjearlo tras el login
-        navigate("/login", { state: { pendingCode: code } });
+        // Redirigimos al login guardando el código
+        navigate("/login", { state: { pendingCode: code.toUpperCase() } });
       } else {
-        // Intentar canje inmediato si ya está logueado
+        // CANJE REAL
         await api.post(`/codigos/canjear/${code}`);
         
-        // En tu API, el canje vincula el curso al usuario. 
-        // Nota: Habría que obtener el cursoId para redirigir exacto, 
-        // por ahora redirigimos a la lista para que vea su nuevo curso.
-        navigate("/cursos");
+        setSuccess("¡Contenido activado con éxito!");
+        setCode(""); // Limpiamos el input
+
+        // Si el padre pasó la función onSuccess (cargarDetalle), la ejecutamos
+        if (onSuccess) {
+          onSuccess(); 
+        } else {
+          // Si no hay onSuccess (ej: estamos en el Home), lo mandamos a ver sus cursos
+          setTimeout(() => navigate("/cursos"), 2000);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.mensaje || "Error al conectar con el servidor.");
@@ -75,12 +79,13 @@ export function CodeInputFC() {
               type="text"
               placeholder="Ej: A1B2C3D4E"
               value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())} // Forzamos mayúsculas
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
               disabled={loading}
               className="mb-2"
               maxLength={9}
             />
             {error && <div className="text-danger mb-2 small">{error}</div>}
+            {success && <Alert variant="success" className="py-2 small">{success}</Alert>}
             
             <Button 
               type="submit" 

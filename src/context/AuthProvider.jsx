@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { AuthContext } from "./AuthContext.jsx";
 
 export const AuthProvider = ({ children }) => {
-    // Inicializamos el estado directamente desde localStorage
+    // Inicializamos el estado desde localStorage
     const [user, setUser] = useState(() => {
         const savedToken = localStorage.getItem("token");
         const savedUser = localStorage.getItem("userData");
@@ -10,7 +10,6 @@ export const AuthProvider = ({ children }) => {
             try {
                 return JSON.parse(savedUser);
             } catch {
-                // Si el JSON está mal, limpiamos el storage y devolvemos null
                 localStorage.removeItem("token");
                 localStorage.removeItem("userData");
                 return null;
@@ -20,12 +19,12 @@ export const AuthProvider = ({ children }) => {
     });
 
     const login = (loginResponse) => {
+        // Limpiamos el objeto: ya no guardamos misCursos aquí
         const userData = {
             id: loginResponse.id,
             nombre: loginResponse.nombre,
             apellido: loginResponse.apellido,
-            rol: loginResponse.rolUsuario,
-            misCursos: loginResponse.misCursos
+            rol: loginResponse.rolUsuario
         };
 
         localStorage.setItem("token", loginResponse.token);
@@ -40,6 +39,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const isAuthenticated = !!user;
+    // Asegúrate de que estos números coincidan con tu Enum de C# (ej: Root=2, Admin=1, User=0)
     const isRoot = user?.rol === 2;
     const isAdmin = user?.rol === 1 || isRoot;
 
