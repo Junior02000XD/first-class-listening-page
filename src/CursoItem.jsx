@@ -64,20 +64,35 @@ export function CursoItem() {
 
     const handleDownload = async () => {
         if (!audioActivo) return;
+        
         try {
-            const res = await api.get(`/audio-access/download/${audioActivo.id}`);
-            const downloadUrl = res.data.downloadUrl;
+            // 1. CAMBIO: Usar api.post y la ruta exacta de tu controlador
+            // 2. Ruta corregida: /audio-access/audio/{id}/descargar
+            const res = await api.post(`/audio-access/audio/${audioActivo.id}/descargar`);
+            
+            // 3. CAMBIO: Tu API devuelve { url: "..." } según tu código de C#
+            const downloadUrl = res.data.url;
+
+            if (!downloadUrl) throw new Error("No se recibió la URL de descarga");
+
+            // Crear el link temporal para disparar la descarga
             const link = document.createElement("a");
             link.href = downloadUrl;
-            link.download = ""; 
+            
+            // Sugerir nombre de archivo (opcional)
+            link.setAttribute("download", `${audioActivo.titulo}.mp3`);
+            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             
-            // Actualizamos localmente para no pedir a la API otra vez
-            setDownloadsLeft(prev => prev - 1);
+            // 4. Actualizamos el contador localmente
+            setDownloadsLeft(prev => Math.max(0, prev - 1));
+
         } catch (err) {
-            alert(err.response?.data?.mensaje || "Error al procesar la descarga");
+            // Si el error es 403, es que llegó al límite de 3 descargas
+            const mensaje = err.response?.data?.mensaje || "Error al procesar la descarga";
+            alert(mensaje);
         }
     };
 
