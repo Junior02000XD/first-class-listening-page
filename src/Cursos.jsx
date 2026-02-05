@@ -17,7 +17,7 @@ export const Cursos = () => {
                 
                 {isAuthenticated && (
                     <>
-                        <h1 className="mt-2">Mis Cursos</h1>
+                        <h1 className="mt-2">Mis Audios</h1>
                         {/* ACTIVAMOS EL FILTRO AQUÍ */}
                         <CursosDisponiblesFC soloMios={true} />
                         <hr />

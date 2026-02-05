@@ -72,7 +72,7 @@ export function CodeInputFC({ onSuccess }) { // Recibimos onSuccess como prop
 
         <Col xs={12} md={6}>
           <h4 className="fw-bold">Ingresa el código de tu libro</h4>
-          <p className="text-muted small">Al canjearlo, tendrás acceso permanente a los audios exclusivos.</p>
+          <p className="subtitle small">Al canjearlo, tendrás acceso permanente a los audios exclusivos.</p>
           
           <Form onSubmit={handleSubmit}>
             <Form.Control

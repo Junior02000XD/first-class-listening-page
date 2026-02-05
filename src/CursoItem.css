@@ -103,3 +103,24 @@
     padding: 1rem;
   }
 }
+
+/* Forzar que el reproductor ocupe el 100% del contenedor */
+.audio-player {
+    width: 100% !important;
+    display: block;
+    height: 50px; /* Altura estándar para que no varíe entre navegadores */
+    outline: none;
+}
+
+/* Ajuste específico para que Chrome no lo haga pequeño */
+audio::-webkit-media-controls-enclosure {
+    border-radius: 4px; /* Quitar el redondeado excesivo de Chrome si quieres que sea cuadrado */
+    background-color: #f1f3f4;
+}
+
+.audio-download-btn:disabled {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #6c757d;
+    cursor: not-allowed;
+}

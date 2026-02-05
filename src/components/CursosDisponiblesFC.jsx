@@ -84,14 +84,14 @@ export function CursosDisponiblesFC({ soloMios = false }) {
                                 className={`btn ${curso.yaLoTengo ? "btn-success" : "btn-outline-secondary"} mt-2`}
                                 onClick={() => navigate(`/Cursos/${curso.id}`)}
                             >
-                                {curso.yaLoTengo ? "Entrar al Curso" : "Saber Más"}
+                                {curso.yaLoTengo ? "Entrar" : "Desbloquear"}
                             </button>
                         </Col>
                     );
                 })}
             </Row>
             {soloMios && cursos.length === 0 && (
-                <p className="text-center text-muted">Aún no has activado ningún curso con tu código.</p>
+                <p className="text-center text-muted">Aún no has activado ningún Track/Audios con tu código.</p>
             )}
         </Container>
     );

@@ -28,7 +28,7 @@ export function NavbarFC() {
         <Navbar.Collapse id="navbar-nav" className='navbar-navigation'>
           <Nav className="me-auto">
             <Nav.Link as={NavLink} to="/" >Home</Nav.Link>
-            <Nav.Link as={NavLink} to="/cursos">Cursos</Nav.Link>
+            <Nav.Link as={NavLink} to="/cursos">Audios</Nav.Link>
             
             {/* Solo mostramos el link de Login si NO está autenticado */}
             {!isAuthenticated && (

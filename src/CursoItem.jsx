@@ -15,16 +15,16 @@ export function CursoItem() {
     const [audios, setAudios] = useState([]);
     const [courseToken, setCourseToken] = useState("");
     const [audioActivo, setAudioActivo] = useState(null);
-    const [downloadsLeft, setDownloadsLeft] = useState(0);
     const [loading, setLoading] = useState(true);
     const [tieneAcceso, setTieneAcceso] = useState(false);
 
     const WORKER_URL = "https://first-class-listening-worker.juliocesarcruzkubber.workers.dev"; 
 
-    // 1. Envolvemos la carga en useCallback para poder re-ejecutarla tras un canje exitoso
+    // Función para cargar datos (se reutiliza al canjear código)
     const cargarDetalle = useCallback(async () => {
         setLoading(true);
         try {
+            // Intentamos acceso privado
             const res = await api.get(`/audio-access/curso/${id}`);
             
             setCurso({
@@ -34,10 +34,10 @@ export function CursoItem() {
             });
             setAudios(res.data.audios || []);
             setCourseToken(res.data.token);
-            setDownloadsLeft(res.data.descargasRestantes ?? 3);
             setTieneAcceso(true); 
 
         } catch (err) {
+            // Si no hay acceso, intentamos cargar solo la info pública
             if (err.response?.status === 401 || err.response?.status === 403) {
                 try {
                     const resPublico = await api.get(`/cursos/${id}`);
@@ -64,39 +64,30 @@ export function CursoItem() {
 
     const handleDownload = async () => {
         if (!audioActivo) return;
-        
         try {
-            // 1. CAMBIO: Usar api.post y la ruta exacta de tu controlador
-            // 2. Ruta corregida: /audio-access/audio/{id}/descargar
+            // 1. Petición POST para registrar y obtener URL firmada
             const res = await api.post(`/audio-access/audio/${audioActivo.id}/descargar`);
-            
-            // 3. CAMBIO: Tu API devuelve { url: "..." } según tu código de C#
             const downloadUrl = res.data.url;
 
-            if (!downloadUrl) throw new Error("No se recibió la URL de descarga");
+            // 2. Disparamos la descarga
+            window.location.href = downloadUrl;
 
-            // Crear el link temporal para disparar la descarga
-            const link = document.createElement("a");
-            link.href = downloadUrl;
+            // 3. Actualizamos el estado local de los audios para reflejar la descarga hecha
+            const actualizarDescargas = (lista) => 
+                lista.map(a => a.id === audioActivo.id ? { ...a, descargasHechas: (a.descargasHechas || 0) + 1 } : a);
+
+            const nuevaLista = actualizarDescargas(audios);
+            setAudios(nuevaLista);
             
-            // Sugerir nombre de archivo (opcional)
-            link.setAttribute("download", `${audioActivo.titulo}.mp3`);
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // 4. Actualizamos el contador localmente
-            setDownloadsLeft(prev => Math.max(0, prev - 1));
+            // 4. Actualizamos el audio activo para que el contador en pantalla cambie
+            setAudioActivo(actualizarDescargas([audioActivo])[0]);
 
         } catch (err) {
-            // Si el error es 403, es que llegó al límite de 3 descargas
-            const mensaje = err.response?.data?.mensaje || "Error al procesar la descarga";
-            alert(mensaje);
+            alert(err.response?.data?.mensaje || "Límite de descargas alcanzado.");
         }
     };
 
-    if (loading) return <div className="text-center my-5"><Spinner animation="border" /></div>;
+    if (loading) return <div className="text-center my-5"><Spinner animation="border" variant="primary" /></div>;
 
     return (
         <>
@@ -118,20 +109,25 @@ export function CursoItem() {
                             <div className="row g-4">
                                 <div className="col-12 col-md-8">
                                     {audioActivo ? (
-                                        <div className="card p-3 audio-player-box h-100">
-                                            <h6 className="mb-2 audio-title">{audioActivo.titulo}</h6>
+                                        <div className="card p-3 audio-player-box h-100 shadow-sm">
+                                            <h6 className="mb-2 audio-title fw-bold">{audioActivo.titulo}</h6>
                                             <audio
                                                 key={audioActivo.id}
                                                 controls
                                                 src={`${WORKER_URL}/?id=${audioActivo.id}&token=${courseToken}`}
-                                                className="audio-player"
+                                                className="audio-player w-100"
                                                 autoPlay
                                             />
-                                            <button className="btn btn-sm mt-3 audio-download-btn" onClick={handleDownload}>
-                                                Descargar audio
+                                            <button 
+                                                className="btn btn-sm mt-3 audio-download-btn fw-bold" 
+                                                onClick={handleDownload}
+                                                // Si las descargas hechas son 3 o más, se deshabilita
+                                                disabled={ (audioActivo.descargasHechas || 0) >= 3 }
+                                            >
+                                                {(audioActivo.descargasHechas || 0) >= 3 ? "Límite alcanzado" : "Descargar audio"}
                                             </button>
-                                            <small className="counter-downloads">
-                                                Descargas restantes: {downloadsLeft}
+                                            <small className="counter-downloads mt-2 d-block">
+                                                Descargas restantes: {Math.max(0, 3 - (audioActivo.descargasHechas || 0))}
                                             </small>
                                         </div>
                                     ) : (
@@ -142,13 +138,13 @@ export function CursoItem() {
                                 </div>
 
                                 <div className="col-12 col-md-4">
-                                    <div className="card p-3 audio-list h-100">
-                                        <h5 className="mb-3 audio-item">Audios del curso</h5>
+                                    <div className="card p-3 audio-list h-100 shadow-sm">
+                                        <h5 className="mb-3 audio-item fw-bold">Audios del curso</h5>
                                         <div className="d-flex flex-column gap-2 audio-buttons">
                                             {audios.map((audio) => (
                                                 <button
                                                     key={audio.id}
-                                                    className={`btn btn-sm text-start me-3 btn-custom ${audioActivo?.id === audio.id ? "btn-primary" : "btn-outline-secondary"}`}
+                                                    className={`btn btn-sm text-start btn-custom ${audioActivo?.id === audio.id ? "btn-primary" : "btn-outline-secondary"}`}
                                                     onClick={() => setAudioActivo(audio)}
                                                 >
                                                     {audio.titulo}
@@ -160,8 +156,9 @@ export function CursoItem() {
                             </div>
                         ) : (
                             <div className="text-center py-5">
-                                <div className="alert alert-warning mb-4">No tienes acceso a los audios de este curso.</div>
-                                {/* 2. Pasamos la función de recarga como Prop para que al canjear se desbloquee todo */}
+                                <div className="alert alert-warning mb-4 shadow-sm">
+                                    No tienes acceso a los audios de este curso. Ingresa tu código para activarlo.
+                                </div>
                                 <CodeInputFC onSuccess={cargarDetalle} />
                             </div>
                         )}

@@ -8,7 +8,7 @@ export function PresentacionFC({scrollIntoView}) {
       <Row className="justify-content-center align-items-center mt-4">
         {/* Columna izquierda */}
         <Col xs={12} lg={4} className="mb-4 mb-lg-0">
-          <h1 id="title">My First Class</h1>
+          <h1 id="title">First Class Listening</h1>
 
           <div className="d-flex gap-2 mt-2">
             <img
@@ -43,7 +43,7 @@ export function PresentacionFC({scrollIntoView}) {
                         </button>
 
                         <button className="btn btn-outline-secondary text-nowrap">
-                            Ver Cursos Disponibles
+                            Ver Audios Disponibles
                         </button>
                     </div>
                 </Col>

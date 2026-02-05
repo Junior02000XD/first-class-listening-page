@@ -13,6 +13,9 @@
   margin: 0px 50px 20px 50px;
 }
 
+.subtitle{
+  opacity: 60%;
+}
 .thumbnail {
   width: 140px;
   cursor: pointer;
