@@ -14,6 +14,8 @@ export function AdminPanelFC() {
     const [audioData, setAudioData] = useState({ cursoId: "", titulo: "", archivo: null, orden: 0 });
     const [audiosCurso, setAudiosCurso] = useState([]); // Audios del curso seleccionado
 
+    const [editandoAudio, setEditandoAudio] = useState(null); // Guardará el ID del audio a editar
+
     useEffect(() => {
         cargarCursos();
     }, []);
@@ -66,29 +68,57 @@ export function AdminPanelFC() {
     };
 
     // --- LÓGICA DE AUDIOS ---
-    const subirAudio = async (e) => {
-        e.preventDefault();
-        const formData = new FormData();
-        formData.append("titulo", audioData.titulo);
-        formData.append("cursoId", audioData.cursoId);
-        formData.append("archivo", audioData.archivo);
-        formData.append("orden", audioData.orden);
-
-        try {
-            await api.post("/audios", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-            alert("Audio subido con éxito");
-            cargarAudiosDelCurso(audioData.cursoId);
-        } catch { alert("Error al subir audio"); }
-    };
-
     const eliminarAudio = async (id) => {
         if (!window.confirm("¿Eliminar este audio?")) return;
         try {
             await api.delete(`/audios/${id}`);
             cargarAudiosDelCurso(audioData.cursoId);
         } catch { alert("Error al eliminar audio"); }
+    };
+
+    const prepararEdicionAudio = (audio) => {
+        setEditandoAudio(audio.id);
+        setAudioData({
+            ...audioData,
+            titulo: audio.titulo,
+            orden: audio.orden || audio.id, // Usamos orden si existe, sino el ID
+            archivo: null // El archivo no se edita por PUT, solo nombre y orden
+        });
+    };
+
+    const cancelarEdicionAudio = () => {
+        setEditandoAudio(null);
+        setAudioData({ ...audioData, titulo: "", orden: 0, archivo: null });
+    };
+
+    const handleSubmitAudio = async (e) => {
+        e.preventDefault();
+        try {
+            if (editandoAudio) {
+                // Caso EDITAR: enviamos JSON con los cambios (solo título y orden)
+                await api.put(`/audios/${editandoAudio}`, {
+                    titulo: audioData.titulo,
+                    orden: parseInt(audioData.orden)
+                });
+                alert("Audio actualizado con éxito");
+            } else {
+                // Caso SUBIR NUEVO: usamos FormData porque lleva archivo
+                const formData = new FormData();
+                formData.append("titulo", audioData.titulo);
+                formData.append("cursoId", audioData.cursoId);
+                formData.append("archivo", audioData.archivo);
+                formData.append("orden", audioData.orden);
+
+                await api.post("/audios", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+                alert("Audio subido con éxito");
+            }
+            cancelarEdicionAudio();
+            cargarAudiosDelCurso(audioData.cursoId);
+        } catch (err) {
+            alert(err.response?.data?.mensaje || "Error en la operación");
+        }
     };
 
     return (
@@ -147,12 +177,13 @@ export function AdminPanelFC() {
             {/* SECCIÓN AUDIOS */}
             <Col md={6}>
                 <Card className="p-3 shadow-sm border-0 admin-card">
-                    <h5 className="fw-bold mb-3">Gestión de Audios</h5>
-                    <Form onSubmit={subirAudio}>
+                    <h5 className="fw-bold mb-3">{editandoAudio ? "Editar Audio" : "Gestión de Audios"}</h5>
+                    <Form onSubmit={handleSubmitAudio}>
                         <Form.Group className="mb-2">
                             <Form.Label className="small fw-bold">1. Seleccionar Curso</Form.Label>
                             <Form.Select 
                                 value={audioData.cursoId} 
+                                disabled={editandoAudio} // No permitimos cambiar de curso mientras editamos
                                 onChange={e => {
                                     setAudioData({...audioData, cursoId: e.target.value});
                                     cargarAudiosDelCurso(e.target.value);
@@ -168,64 +199,66 @@ export function AdminPanelFC() {
                             <Form.Label className="small fw-bold">2. Datos del Audio</Form.Label>
                             <Form.Control 
                                 className="mb-2" 
-                                placeholder="Título del Audio (ej: Lesson 1)" 
+                                placeholder="Título del Audio" 
+                                value={audioData.titulo}
                                 onChange={e => setAudioData({...audioData, titulo: e.target.value})} 
                                 required
                             />
                             <Row>
-                                <Col>
+                                <Col xs={4}>
                                     <Form.Control 
                                         type="number" 
                                         placeholder="Orden" 
+                                        value={audioData.orden}
                                         onChange={e => setAudioData({...audioData, orden: e.target.value})} 
                                         required
                                     />
                                 </Col>
-                                <Col>
-                                    <Form.Control 
-                                        type="file" 
-                                        accept="audio/mpeg" 
-                                        onChange={e => setAudioData({...audioData, archivo: e.target.files[0]})} 
-                                        required
-                                    />
+                                <Col xs={8}>
+                                    {!editandoAudio ? (
+                                        <Form.Control 
+                                            type="file" 
+                                            accept="audio/mpeg" 
+                                            onChange={e => setAudioData({...audioData, archivo: e.target.files[0]})} 
+                                            required
+                                        />
+                                    ) : (
+                                        <div className="alert alert-info py-1 px-2 small mb-0">
+                                            El archivo no se puede editar (elimina y sube otro)
+                                        </div>
+                                    )}
                                 </Col>
                             </Row>
                         </Form.Group>
-                        <Button type="submit" variant="primary" className="w-100 mt-2" disabled={!audioData.cursoId}>
-                            Subir MP3 a R2 Privado
-                        </Button>
+                        
+                        <div className="d-flex gap-2">
+                            <Button type="submit" variant={editandoAudio ? "warning" : "primary"} className="w-100 mt-2" disabled={!audioData.cursoId}>
+                                {editandoAudio ? "Guardar Cambios" : "Subir MP3 a R2 Privado"}
+                            </Button>
+                            {editandoAudio && (
+                                <Button variant="secondary" className="mt-2" onClick={cancelarEdicionAudio}>X</Button>
+                            )}
+                        </div>
                     </Form>
 
                     {audioData.cursoId && (
-                        <div className="mt-4 animate__animated animate__fadeIn"> {/* Añadí una pequeña animación si usas animate.css */}
+                        <div className="mt-4 animate__animated animate__fadeIn">
                             <h6 className="fw-bold small mb-2 text-primary">Audios en este curso:</h6>
-                            
-                            {/* CONTENEDOR CON BORDE */}
                             <div className="border-container-custom shadow-sm">
-                                <ListGroup 
-                                    variant="flush" 
-                                    className="small custom-audio-list"
-                                    style={{ maxHeight: '250px', overflowY: 'auto' }}
-                                >
+                                <ListGroup variant="flush" className="small custom-audio-list" style={{ maxHeight: '250px', overflowY: 'auto' }}>
                                     {audiosCurso.length === 0 ? (
-                                        <div className="p-4 text-center">
-                                            <p className="text-muted-custom mb-0 italic">No hay audios aún para este curso.</p>
-                                        </div>
+                                        <div className="p-4 text-center"><p className="text-muted-custom mb-0 italic">No hay audios aún.</p></div>
                                     ) : (
                                         audiosCurso.map(a => (
                                             <ListGroup.Item key={a.id} className="d-flex justify-content-between align-items-center px-3 list-item-custom">
                                                 <div className="d-flex align-items-center">
-                                                    <span className="text-muted-custom me-2" style={{fontSize: '0.7rem'}}>#{a.id}</span>
+                                                    <span className="text-muted-custom me-2" style={{fontSize: '0.7rem'}}>O: {a.orden || a.id}</span>
                                                     <span className="fw-medium">{a.titulo}</span>
                                                 </div>
-                                                <Button 
-                                                    variant="link" 
-                                                    size="sm" 
-                                                    className="text-danger text-decoration-none p-0 fw-bold" 
-                                                    onClick={() => eliminarAudio(a.id)}
-                                                >
-                                                    Eliminar
-                                                </Button>
+                                                <div className="d-flex gap-2">
+                                                    <Button variant="link" size="sm" className="p-0 text-decoration-none" onClick={() => prepararEdicionAudio(a)}>Editar</Button>
+                                                    <Button variant="link" size="sm" className="text-danger text-decoration-none p-0 fw-bold" onClick={() => eliminarAudio(a.id)}>Eliminar</Button>
+                                                </div>
                                             </ListGroup.Item>
                                         ))
                                     )}
