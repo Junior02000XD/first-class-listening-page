@@ -68,7 +68,7 @@ export function PerfilUsuario() {
                                 </div>
                             </div>
                             <h4 className="fw-bold">{user?.nombre} {user?.apellido}</h4>
-                            <p className="text-muted small mb-3">{user?.email}</p>
+                            <p className="text-muted-custom small mb-3">{user?.email}</p>
                             <hr />
                             
                             {!editMode ? (
