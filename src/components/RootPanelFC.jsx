@@ -98,7 +98,7 @@ export function RootPanelFC() {
             {codigos.length > 0 && (
                 <div className="mt-2 animate__animated animate__fadeIn">
                     <div className="d-flex justify-content-between align-items-end mb-2">
-                        <h6 className="fw-bold mb-0 text-muted">Previsualización:</h6>
+                        <h6 className="fw-bold mb-0 text-muted-custom">Previsualización:</h6>
                         <Button variant="success" size="sm" onClick={descargarCSV} className="fw-bold">
                             Descargar .CSV para Excel
                         </Button>
