@@ -37,7 +37,7 @@ export function NavbarFC() {
 
             {/* OPCIÓN PARA ADMINS: Se activa solo si es Admin o Root */}
             {isAdmin && (
-              <Nav.Link as={NavLink} to="/admin/dashboard" className="text-warning">
+              <Nav.Link as={NavLink} to="/Panel" className="text-warning">
                 Panel Admin
               </Nav.Link>
             )}
@@ -52,6 +52,9 @@ export function NavbarFC() {
               <Dropdown.Menu className='menu-dropdown-custom' align="end">
                 <Dropdown.Item as={Link} to="/cursos" className='dropdown-item-custom'>
                   Mis Cursos
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/Perfil" className='dropdown-item-custom'>
+                  Perfil
                 </Dropdown.Item>
                 
                 <Dropdown.Divider />

@@ -19,11 +19,14 @@ export const AuthProvider = ({ children }) => {
     });
 
     const login = (loginResponse) => {
-        // Limpiamos el objeto: ya no guardamos misCursos aquí
         const userData = {
             id: loginResponse.id,
             nombre: loginResponse.nombre,
             apellido: loginResponse.apellido,
+            email: loginResponse.email,
+            pais: loginResponse.pais,
+            ciudad: loginResponse.ciudad,
+            fechaCumpleaños: loginResponse.fechaCumpleaños,
             rol: loginResponse.rolUsuario
         };
 

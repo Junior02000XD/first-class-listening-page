@@ -1,0 +1,85 @@
+/* Fondos y Sombras suaves */
+.admin-card {
+    border-radius: 15px !important;
+    transition: transform 0.2s;
+    background-color: #2E1572;
+}
+
+.shadow-inner {
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+/* Scroll personalizado para la tabla de códigos */
+.custom-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+/* Badge decorativo */
+.badge-root {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+#panel-tabs-tab-admin {
+    background-color: #2E1572 !important;
+    color: #fff;
+}
+
+#panel-tabs-tab-root {
+    background-color: #2E1572 !important;
+    color: #fff;
+}
+
+.custom-audio-list{
+    border-color: #fff;
+}
+
+.border-container-custom {
+    border: 1px solid #dee2e6; /* Color de borde estándar de Bootstrap */
+    border-radius: 8px;        /* Bordes redondeados */
+    overflow: hidden;          /* IMPORTANTE: Mantiene el contenido dentro del redondeado */
+    background-color: #fff;
+}
+
+/* Estilo para los items internos */
+.list-item-custom {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f1f1f1 !important;
+    background-color: #2E1572 !important;
+    color: #fff !important;
+}
+
+.list-item-custom:hover {
+    background-color: #f8f9fa; /* Efecto sutil al pasar el mouse */
+}
+
+/* Personaliza el scrollbar para que combine con el borde */
+.custom-audio-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-audio-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.custom-audio-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.text-muted-custom {
+    opacity: 60%;
+}

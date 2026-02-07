@@ -1,0 +1,39 @@
+/* Fondos y Sombras suaves */
+.admin-card {
+    border-radius: 15px !important;
+    transition: transform 0.2s !important;
+    background-color: #2E1572 !important;
+    color: #fff !important;
+}
+
+.shadow-inner {
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+
+/* Scroll personalizado para la tabla de códigos */
+.custom-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+/* Badge decorativo */
+.badge-root {
+    background: linear-gradient(45deg, #0d6efd, #6610f2);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.text-muted-custom {
+    opacity: 60%;
+}

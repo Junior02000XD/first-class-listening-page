@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, useContext } from "react";
 import { Container, Card, Button, Form, Spinner, Row, Col } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
+import { jwtDecode } from "jwt-decode";
 import api from "../api/axios";
 
 export function LoginSelectorFC() {
@@ -28,24 +29,27 @@ export function LoginSelectorFC() {
   const handleGoogleLogin = useCallback(async (response) => {
     setLoading(true);
     try {
-      const res = await api.post("/usuarios/login", {
-        email: "", 
-        tipo: 1, // Google
-        valor: response.credential 
-      });
-      login(res.data);
+      const decoded = jwtDecode(response.credential);
       
-      // Proceso de Canje post-login
-      if (pendingCode) {
-        await api.post(`/codigos/canjear/${pendingCode}`);
-      }
+      const res = await api.post("/usuarios/login-google", {
+        nombre: decoded.given_name || "Usuario",
+        apellido: decoded.family_name || "Google",
+        email: decoded.email,
+        valor: response.credential, // El GoogleId o Token
+        tipo: 1, // TipoCredencial.Google
+        pais: "N/A",
+        ciudad: "N/A"
+      });
+
+      login(res.data);
+      if (pendingCode) await api.post(`/codigos/canjear/${pendingCode}`);
       navigate("/cursos");
     } catch {
-      setError("Error al autenticar con Google.");
+      setError("Error al sincronizar con Google.");
     } finally {
       setLoading(false);
     }
-  }, [login, pendingCode, navigate]);
+}, [login, pendingCode, navigate]);
 
   useEffect(() => {
     const renderGoogleButton = () => {

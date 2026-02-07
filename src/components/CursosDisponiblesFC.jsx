@@ -91,7 +91,7 @@ export function CursosDisponiblesFC({ soloMios = false }) {
                 })}
             </Row>
             {soloMios && cursos.length === 0 && (
-                <p className="text-center text-muted">Aún no has activado ningún Track/Audios con tu código.</p>
+                <p className="text-center">Aún no has activado ningún Track de Audios con tu código.</p>
             )}
         </Container>
     );
