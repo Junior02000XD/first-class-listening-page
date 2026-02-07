@@ -28,7 +28,7 @@ export function NavbarFC() {
         <Navbar.Collapse id="navbar-nav" className='navbar-navigation'>
           <Nav className="me-auto">
             <Nav.Link as={NavLink} to="/" >Home</Nav.Link>
-            <Nav.Link as={NavLink} to="/cursos">Audios</Nav.Link>
+            <Nav.Link as={NavLink} to="/Cursos">Audios</Nav.Link>
             
             {/* Solo mostramos el link de Login si NO está autenticado */}
             {!isAuthenticated && (
@@ -50,7 +50,7 @@ export function NavbarFC() {
                 Hola, {user?.nombre || "Usuario"}
               </Dropdown.Toggle>
               <Dropdown.Menu className='menu-dropdown-custom' align="end">
-                <Dropdown.Item as={Link} to="/cursos" className='dropdown-item-custom'>
+                <Dropdown.Item as={Link} to="/Cursos" className='dropdown-item-custom'>
                   Mis Cursos
                 </Dropdown.Item>
                 <Dropdown.Item as={Link} to="/Perfil" className='dropdown-item-custom'>

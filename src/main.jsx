@@ -17,7 +17,7 @@ import CursoItem from './CursoItem.jsx';
 
 const router = createBrowserRouter([
   { path: "/", element: <App /> },
-  { path: "/cursos", element: <Cursos /> },
+  { path: "/Cursos", element: <Cursos /> },
   { path: "/Login", element: <Login /> },
   { path: "/Cursos/:id", element: <CursoItem/> },
   { path: "/Perfil", element: <PerfilUsuario />},
