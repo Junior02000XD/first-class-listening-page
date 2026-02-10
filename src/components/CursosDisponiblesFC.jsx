@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../api/axios";
 
+// ACTUALIZADO: URL de tu nuevo bucket 'first-class-content'
 const R2_PUBLIC_URL = "https://pub-c366ad600966461483237465e4989b76.r2.dev";
 
 export function CursosDisponiblesFC({ soloMios = false }) {
     const [cursos, setCursos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const { isAuthenticated } = useContext(AuthContext); // Ya no dependemos del objeto 'user' aquí
+    const { isAuthenticated } = useContext(AuthContext); 
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -21,10 +22,10 @@ export function CursosDisponiblesFC({ soloMios = false }) {
 
                 let idsMisCursos = [];
 
-                // 2. Si está logueado, consultamos sus accesos reales a la API
+                // 2. Si está logueado, consultamos sus accesos a CONTENIDOS (Ruta actualizada)
                 if (isAuthenticated) {
                     try {
-                        const resMios = await api.get("/audio-access/mis-cursos");
+                        const resMios = await api.get("/contenido-access/mis-cursos");
                         // Guardamos solo los IDs para hacer el "match" fácilmente
                         idsMisCursos = resMios.data.map(c => c.id || c.Id);
                     } catch (errMios) {
@@ -34,10 +35,10 @@ export function CursosDisponiblesFC({ soloMios = false }) {
 
                 // 3. Inyectamos la propiedad 'yaLoTengo' en cada curso del catálogo
                 const dataProcesada = catalogoTotal.map(curso => {
-                    const cursoId = curso.id || curso.Id; // Normalizamos el ID aquí
+                    const cursoId = curso.id || curso.Id; 
                     return {
                         ...curso,
-                        id: cursoId, // Forzamos que siempre exista 'id' en minúscula
+                        id: cursoId, 
                         yaLoTengo: idsMisCursos.includes(cursoId)
                     };
                 });
@@ -65,11 +66,10 @@ export function CursosDisponiblesFC({ soloMios = false }) {
         <Container className="my-5">
             <Row ms={1} md={2} lg={3} className="justify-content-center">
                 {cursos.map((curso) => {
-                    // Ahora 'yaLoTengo' viene calculado directamente desde la API
                     return (
                         <Col key={curso.id} xs={12} className="mb-4 text-center">
                             <img
-                                key={`img-${curso.id}`} // Forzamos a React a identificar la imagen de forma única
+                                key={`img-${curso.id}`} 
                                 src={curso.imagenUrl.startsWith('http') ? curso.imagenUrl : `${R2_PUBLIC_URL}/${curso.imagenUrl}`}
                                 alt={curso.titulo}
                                 className="img-fluid rounded mb-2"

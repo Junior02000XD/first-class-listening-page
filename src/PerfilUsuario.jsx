@@ -15,41 +15,50 @@ export function PerfilUsuario() {
     const [msg, setMsg] = useState({ type: "", text: "" });
     
     // Eliminamos los useEffects de sincronización y usamos el estado inicial 
-    // Basado en el objeto user actual.
+    // Estado inicial sincronizado con el DTO de C#
     const [formData, setFormData] = useState({
         nombre: user?.nombre || "",
         apellido: user?.apellido || "",
         pais: user?.pais || "N/A",
         ciudad: user?.ciudad || "N/A",
-        fechaCumpleaños: user?.fechaCumpleaños || ""
+        fechaCumpleaños: user?.fechaCumpleaños || "",
+        // Incluimos estos para el DTO completo del Backend
+        email: user?.email || "",
+        valor: "", // Para cambios de contraseña si fuera necesario
+        tipo: 0,   // Local
+        rol: user?.rolUsuario || 2
     });
 
     // Solo mantenemos el Effect que consulta la API externa (Historial de canjes)
     useEffect(() => {
-        if (user?.id) { // Verificamos que el ID exista
+        if (user?.id) {
+            // Actualizado a la nueva ruta de códigos
             api.get("/codigos/mis-canjes")
                 .then(res => setCanjes(res.data))
-                .catch(err => console.error("Error al cargar canjes", err));
+                .catch(err => console.error("Error al cargar historial:", err));
         }
-    }, [user?.id]); // Usamos el ID como dependencia para evitar re-ejecuciones
+    }, [user?.id]);// Usamos el ID como dependencia para evitar re-ejecuciones
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await api.put(`/usuarios/${user.id}`, formData);
-            
-            // Actualizamos el contexto
-            login({
-                ...user,
+            // 1. Enviamos el DTO completo a la API
+            const res = await api.put(`/usuarios/${user.id}`, {
                 ...formData,
-                rolUsuario: user.rol,
-                token: localStorage.getItem("token")
+                fechaCumpleaños: formData.fechaCumpleaños // Formato YYYY-MM-DD
             });
+            
+            // 2. Actualizamos el contexto con la respuesta fresca de la API
+            // res.data ya trae el LoginResponseDto con los campos correctos
+            login(res.data);
 
-            setMsg({ type: "success", text: "¡Perfil actualizado!" });
+            setMsg({ type: "success", text: "¡Perfil actualizado con éxito!" });
             setEditMode(false);
-        } catch {
-            setMsg({ type: "danger", text: "Error al actualizar." });
+            
+            // Limpiar mensaje después de 3 segundos
+            setTimeout(() => setMsg({ type: "", text: "" }), 3000);
+        } catch (err) {
+            setMsg({ type: "danger", text: err.response?.data?.mensaje || "Error al actualizar." });
         }
     };
 

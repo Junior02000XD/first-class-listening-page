@@ -4,17 +4,21 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { jwtDecode } from "jwt-decode";
 import api from "../api/axios";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
+import { InputGroup } from "react-bootstrap";
 
 export function LoginSelectorFC() {
   const { login } = useContext(AuthContext);
   const [view, setView] = useState("selector");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   
   // Estado ampliado para el registro completo
   const [formData, setFormData] = useState({ 
     email: "", 
-    password: "", 
+    password: "",
+    confirmPassword: "", 
     nombre: "", 
     apellido: "",
     pais: "",
@@ -84,6 +88,12 @@ export function LoginSelectorFC() {
     setLoading(true);
     setError("");
 
+    // Validación de coincidencia de contraseña en registro
+    if (view === "register" && formData.password !== formData.confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+    
     try {
        const endpoint = view === "login" ? "/usuarios/login" : "/usuarios/register";
        
@@ -147,45 +157,85 @@ export function LoginSelectorFC() {
 
   return (
     <Container className="d-flex justify-content-center my-5">
-      <Card className="login-card p-4" style={{ maxWidth: '450px', width: '100%' }}>
-        <Button variant="link" className="p-0 mb-3 text-decoration-none" onClick={() => setView("selector")}>← Volver</Button>
-        <h4 className="mb-4 fw-bold">{view === "login" ? "¡Hola de nuevo!" : "Crea tu cuenta"}</h4>
-        
-        <Form onSubmit={handleSubmit}>
-          {view === "register" && (
-            <>
-              <Row className="mb-2">
-                <Col>
-                  <Form.Control placeholder="Nombre" required onChange={e => setFormData({...formData, nombre: e.target.value})} />
-                </Col>
-                <Col>
-                  <Form.Control placeholder="Apellido" required onChange={e => setFormData({...formData, apellido: e.target.value})} />
-                </Col>
-              </Row>
-              <Row className="mb-2">
-                <Col>
-                  <Form.Control placeholder="País" required onChange={e => setFormData({...formData, pais: e.target.value})} />
-                </Col>
-                <Col>
-                  <Form.Control placeholder="Ciudad" required onChange={e => setFormData({...formData, ciudad: e.target.value})} />
-                </Col>
-              </Row>
-              <Form.Group className="mb-2">
-                <Form.Label className="small text-muted mb-1">Fecha de Nacimiento</Form.Label>
-                <Form.Control type="date" required onChange={e => setFormData({...formData, fechaNacimiento: e.target.value})} />
-              </Form.Group>
-            </>
-          )}
-
-          <Form.Control type="email" placeholder="Email" className="mb-2" required onChange={e => setFormData({...formData, email: e.target.value})} />
-          <Form.Control type="password" placeholder="Contraseña" className="mb-3" required onChange={e => setFormData({...formData, password: e.target.value})} />
-          
-          {error && <p className="text-danger small">{error}</p>}
-          
-          <Button variant="primary" type="submit" className="w-100 fw-bold" disabled={loading}>
-            {loading ? <Spinner size="sm" /> : (view === "login" ? "Entrar" : "Registrarme")}
+      <Card className="login-card p-4 shadow-sm" style={{ maxWidth: view === "selector" ? '400px' : '450px', width: '100%' }}>
+        {view !== "selector" && (
+          <Button variant="link" className="p-0 mb-3 text-decoration-none text-muted" onClick={() => {setView("selector"); setError(""); setShowPassword(false);}}>
+            ← Volver
           </Button>
-        </Form>
+        )}
+
+        <h4 className="mb-4 fw-bold text-center">
+          {view === "selector" ? "Inicia sesión" : view === "login" ? "¡Hola de nuevo!" : "Crea tu cuenta"}
+        </h4>
+
+        {view === "selector" ? (
+          <>
+            <Button variant="primary" className="w-100 mb-2 py-2 fw-bold" onClick={() => setView("login")}>
+              Iniciar sesión con correo
+            </Button>
+            <Button variant="outline-primary" className="w-100 mb-3 py-2 fw-bold" onClick={() => setView("register")}>
+              Crear cuenta nueva
+            </Button>
+            <div className="divider my-3"><span>o</span></div>
+            <div id="googleBtn" className="d-flex justify-content-center" style={{ width: '100%' }}></div>
+          </>
+        ) : (
+          <Form onSubmit={handleSubmit}>
+            {view === "register" && (
+              <>
+                <Row className="mb-2 g-2">
+                  <Col><Form.Control placeholder="Nombre" required onChange={e => setFormData({...formData, nombre: e.target.value})} /></Col>
+                  <Col><Form.Control placeholder="Apellido" required onChange={e => setFormData({...formData, apellido: e.target.value})} /></Col>
+                </Row>
+                <Row className="mb-2 g-2">
+                  <Col><Form.Control placeholder="País" required onChange={e => setFormData({...formData, pais: e.target.value})} /></Col>
+                  <Col><Form.Control placeholder="Ciudad" required onChange={e => setFormData({...formData, ciudad: e.target.value})} /></Col>
+                </Row>
+                <Form.Group className="mb-2">
+                  <Form.Label className="small text-muted mb-1">Fecha de Nacimiento</Form.Label>
+                  <Form.Control type="date" required onChange={e => setFormData({...formData, fechaNacimiento: e.target.value})} />
+                </Form.Group>
+              </>
+            )}
+
+            <Form.Control type="email" placeholder="Email" className="mb-2" required onChange={e => setFormData({...formData, email: e.target.value})} />
+            
+             {/* Input con Ojo para mostrar contraseña */}
+            <Form.Group className="mb-2">
+              <div className="input-group">
+                <Form.Control 
+                  type={showPassword ? "text" : "password"} 
+                  placeholder="Contraseña" 
+                  required 
+                  onChange={e => setFormData({...formData, password: e.target.value})} 
+                />
+                <Button 
+                  variant="outline-secondary" 
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                >
+                  {showPassword ? <EyeSlash size={18}/> : <Eye size={18}/>}
+                </Button>
+              </div>
+            </Form.Group>
+
+            {view === "register" && (
+              <Form.Control 
+                type="password" 
+                placeholder="Confirmar contraseña" 
+                className="mb-3" 
+                required 
+                onChange={e => setFormData({...formData, confirmPassword: e.target.value})} 
+              />
+            )}
+            
+            {error && <p className="text-danger small text-center">{error}</p>}
+            
+            <Button variant="primary" type="submit" className="w-100 fw-bold py-2 mt-2" disabled={loading}>
+              {loading ? <Spinner animation="border" size="sm" /> : (view === "login" ? "Entrar" : "Registrarme")}
+            </Button>
+          </Form>
+        )}
       </Card>
     </Container>
   );
