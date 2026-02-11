@@ -102,7 +102,7 @@ export function CursoItem() {
                                             </h6>
                                             
                                             {/* REPRODUCTOR HÍBRIDO */}
-                                            <div className="media-wrapper bg-black rounded overflow-hidden mb-3">
+                                            <div className="media-wrapper rounded overflow-hidden mb-3">
                                                 {itemActivo.tipo === 1 ? (
                                                     <video
                                                         key={itemActivo.id}
