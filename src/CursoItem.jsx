@@ -110,7 +110,7 @@ export function CursoItem() {
                                                         controlsList="nodownload"
                                                         // El preload="metadata" ayuda a que el streaming de 1GB sea fluido
                                                         preload="metadata"
-                                                        src={`${WORKER_URL}/?id=${itemActivo.id}&token=${courseToken}`}
+                                                        src={`${WORKER_URL}/?id=${itemActivo.id}&token=${encodeURIComponent(courseToken)}`}
                                                         className="w-100"
                                                         autoPlay
                                                     />
@@ -118,7 +118,7 @@ export function CursoItem() {
                                                     <audio
                                                         key={itemActivo.id}
                                                         controls
-                                                        src={`${WORKER_URL}/?id=${itemActivo.id}&token=${courseToken}`}
+                                                        src={`${WORKER_URL}/?id=${itemActivo.id}&token=${encodeURIComponent(courseToken)}`}
                                                         className="w-100 mt-2"
                                                         autoPlay
                                                     />
