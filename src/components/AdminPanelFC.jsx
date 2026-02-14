@@ -34,10 +34,14 @@ export function AdminPanelFC() {
     const cargarContenidosDelCurso = async (cursoId) => {
         if (!cursoId) return;
         try {
-            // Usamos el nuevo endpoint genérico de acceso
-            const res = await api.get(`/contenido-access/curso/${cursoId}`);
-            setContenidosCurso(res.data.contenidos || []); // Propiedad 'contenidos'
-        } catch {
+             // Llamada al nuevo endpoint dedicado para administración
+            const res = await api.get(`/cursos/${cursoId}/contenidos-admin`);
+            
+            // La API ya debería devolverlos ordenados, pero aseguramos por si acaso
+            const datos = Array.isArray(res.data) ? res.data : [];
+            setContenidosCurso(datos.sort((a, b) => a.orden - b.orden));
+        } catch (err) {
+            console.error("Error al cargar contenidos del curso", err);
             setContenidosCurso([]);
         }
     };
@@ -187,8 +191,9 @@ export function AdminPanelFC() {
                                 value={contenidoData.cursoId} 
                                 disabled={editandoContenido || subiendo} 
                                 onChange={e => {
-                                    setContenidoData({...contenidoData, cursoId: e.target.value});
-                                    cargarContenidosDelCurso(e.target.value);
+                                    const id = e.target.value;
+                                    setContenidoData({...contenidoData, cursoId: id});
+                                    cargarContenidosDelCurso(id);
                                 }}
                                 required
                             >
@@ -253,7 +258,7 @@ export function AdminPanelFC() {
 
                     {contenidoData.cursoId && (
                         <div className="mt-4 animate__animated animate__fadeIn">
-                            <h6 className="fw-bold small mb-2 text-primary">Lecciones en este curso:</h6>
+                            <h6 className="fw-bold small mb-2">Lecciones en este curso:</h6>
                             <div className="border-container-custom shadow-sm">
                                 <ListGroup variant="flush" className="small custom-audio-list" style={{ maxHeight: '250px', overflowY: 'auto' }}>
                                     {contenidosCurso.length === 0 ? (
@@ -261,13 +266,14 @@ export function AdminPanelFC() {
                                     ) : (
                                         contenidosCurso.map(a => (
                                             <ListGroup.Item key={a.id} className="d-flex justify-content-between align-items-center px-3 list-item-custom">
-                                                <div className="d-flex align-items-center">
-                                                    <span className="text-muted-custom me-2" style={{fontSize: '0.7rem'}}>
-                                                        {a.tipo === 1 ? "🎥" : "🎧"} O: {a.orden || a.id}
+                                                <div className="d-flex align-items-center overflow-hidden">
+                                                    <span className="text-muted-custom me-2" style={{fontSize: '0.7rem', minWidth: '45px'}}>
+                                                        {/* Detecta el tipo tanto por Enum (número) como por String */}
+                                                        {(a.tipo === 1 || a.tipo === "Video") ? "🎥" : "🎧"} № {a.orden}
                                                     </span>
-                                                    <span className="fw-medium">{a.titulo}</span>
+                                                    <span className="fw-medium text-truncate">{a.titulo}</span>
                                                 </div>
-                                                <div className="d-flex gap-2">
+                                                <div className="d-flex gap-2 ms-2">
                                                     <Button variant="link" size="sm" className="p-0 text-decoration-none" disabled={subiendo} onClick={() => prepararEdicionContenido(a)}>Editar</Button>
                                                     <Button variant="link" size="sm" className="text-danger text-decoration-none p-0 fw-bold" disabled={subiendo} onClick={() => eliminarContenido(a.id)}>Eliminar</Button>
                                                 </div>
