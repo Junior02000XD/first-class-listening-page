@@ -108,6 +108,8 @@ export function CursoItem() {
                                                         key={itemActivo.id}
                                                         controls
                                                         controlsList="nodownload"
+                                                        //Asegurar la reproduccion y evitar bloqueos por el navegador
+                                                        crossOrigin="anonymous"
                                                         // El preload="metadata" ayuda a que el streaming de 1GB sea fluido
                                                         preload="metadata"
                                                         src={`${WORKER_URL}/?id=${itemActivo.id}&token=${encodeURIComponent(courseToken)}`}
