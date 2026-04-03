@@ -197,7 +197,7 @@ export function LoginSelectorFC() {
         {/* VISTA 2: FORMULARIO DE RECUPERACIÓN DE CONTRASEÑA */}
         {view === "forgotPassword" && (
           <Form onSubmit={handleForgotPassword}>
-            <p className="text-muted small text-center mb-3">
+            <p className="text-muted-custom small text-center mb-3">
               Ingresa tu correo electrónico y te enviaremos las instrucciones para crear una nueva contraseña.
             </p>
             <Form.Control 
