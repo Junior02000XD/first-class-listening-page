@@ -45,3 +45,8 @@
   background-color: #a0841e !important;
   border-color: #a0841e !important;
 }
+
+.text-muted-custom {
+    opacity: 60%;
+    color: white;
+}
