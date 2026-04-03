@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { Form, Button, Row, Col, Card, ListGroup, Spinner } from "react-bootstrap";
+import { Form, Button, Row, Col, Card, ListGroup, Spinner, Badge } from "react-bootstrap"; // <-- Añadido Badge aquí
 import api from "../api/axios";
 
 export function AdminPanelFC() {
     const [cursos, setCursos] = useState([]);
     const [loadingCursos, setLoadingCursos] = useState(true);
-    const [subiendo, setSubiendo] = useState(false); // Nuevo: para feedback de subida pesada
+    const [subiendo, setSubiendo] = useState(false); 
     
     // Estados para Cursos
     const [cursoDto, setCursoDto] = useState({ titulo: "", imagenUrl: "" });
@@ -34,10 +34,7 @@ export function AdminPanelFC() {
     const cargarContenidosDelCurso = async (cursoId) => {
         if (!cursoId) return;
         try {
-             // Llamada al nuevo endpoint dedicado para administración
             const res = await api.get(`/cursos/${cursoId}/contenidos-admin`);
-            
-            // La API ya debería devolverlos ordenados, pero aseguramos por si acaso
             const datos = Array.isArray(res.data) ? res.data : [];
             setContenidosCurso(datos.sort((a, b) => a.orden - b.orden));
         } catch (err) {
@@ -76,7 +73,7 @@ export function AdminPanelFC() {
     const eliminarContenido = async (id) => {
         if (!window.confirm("¿Eliminar este contenido permanentemente?")) return;
         try {
-            await api.delete(`/contenidos/${id}`); // Ruta actualizada
+            await api.delete(`/contenidos/${id}`);
             cargarContenidosDelCurso(contenidoData.cursoId);
         } catch { alert("Error al eliminar contenido"); }
     };
@@ -98,7 +95,7 @@ export function AdminPanelFC() {
 
     const handleSubmitContenido = async (e) => {
         e.preventDefault();
-        setSubiendo(true); // Bloqueamos UI para subida de archivos grandes
+        setSubiendo(true); 
         try {
             if (editandoContenido) {
                 await api.put(`/contenidos/${editandoContenido}`, {
@@ -113,7 +110,6 @@ export function AdminPanelFC() {
                 formData.append("archivo", contenidoData.archivo);
                 formData.append("orden", contenidoData.orden);
 
-                // Axios usará el timeout: 0 que configuramos para el video de 1GB
                 await api.post("/contenidos", formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
@@ -129,7 +125,7 @@ export function AdminPanelFC() {
     };
 
     return (
-                <Row>
+        <Row>
             {/* SECCIÓN CURSOS */}
             <Col md={6}>
                 <Card className="p-3 mb-4 shadow-sm border-0 admin-card">
@@ -167,7 +163,15 @@ export function AdminPanelFC() {
                             >
                                 {cursos.map(c => (
                                     <ListGroup.Item key={c.id} className="d-flex justify-content-between align-items-center px-3 list-item-custom">
-                                        <span className="small fw-bold">{c.titulo}</span>
+                                        
+                                        {/* AQUI ESTÁ LA MODIFICACIÓN: Agregado el Badge con el ID */}
+                                        <div className="d-flex align-items-center">
+                                            <Badge bg="secondary" className="me-2 px-2 py-1" style={{ fontSize: '0.75rem' }}>
+                                                ID: {c.id}
+                                            </Badge>
+                                            <span className="small fw-bold">{c.titulo}</span>
+                                        </div>
+
                                         <div>
                                             <Button variant="link" size="sm" className="text-decoration-none" onClick={() => {setEditandoCurso(c.id); setCursoDto({titulo: c.titulo, imagenUrl: c.imagenUrl})}}>Editar</Button>
                                             <Button variant="link" size="sm" className="text-danger text-decoration-none" onClick={() => eliminarCurso(c.id)}>Eliminar</Button>
@@ -198,7 +202,8 @@ export function AdminPanelFC() {
                                 required
                             >
                                 <option value="">Seleccione un curso...</option>
-                                {cursos.map(c => <option key={c.id} value={c.id}>{c.titulo}</option>)}
+                                {/* También modifiqué aquí para que el selector muestre el ID */}
+                                {cursos.map(c => <option key={c.id} value={c.id}>[ID: {c.id}] - {c.titulo}</option>)}
                             </Form.Select>
                         </Form.Group>
 
@@ -227,7 +232,6 @@ export function AdminPanelFC() {
                                     {!editandoContenido ? (
                                         <Form.Control 
                                             type="file" 
-                                            // Aceptamos MP3 y MP4 (Video)
                                             accept="audio/mpeg, video/mp4" 
                                             onChange={e => setContenidoData({...contenidoData, archivo: e.target.files[0]})} 
                                             required
@@ -268,7 +272,6 @@ export function AdminPanelFC() {
                                             <ListGroup.Item key={a.id} className="d-flex justify-content-between align-items-center px-3 list-item-custom">
                                                 <div className="d-flex align-items-center overflow-hidden">
                                                     <span className="text-muted-custom me-2" style={{fontSize: '0.7rem', minWidth: '45px'}}>
-                                                        {/* Detecta el tipo tanto por Enum (número) como por String */}
                                                         {(a.tipo === 1 || a.tipo === "Video") ? "🎥" : "🎧"} № {a.orden}
                                                     </span>
                                                     <span className="fw-medium text-truncate">{a.titulo}</span>

@@ -19,8 +19,9 @@ export function CodeInputFC({ onSuccess }) { // Recibimos onSuccess como prop
     setError("");
     setSuccess("");
 
-    if (!/^[A-Za-z0-9]{9}$/.test(code)) {
-      setError("Código inválido. Debe tener 9 caracteres alfanuméricos.");
+    // Validamos que tenga exactamente 9 o 10 caracteres alfanuméricos
+    if (!/^[A-Za-z0-9]{9,10}$/.test(code)) {
+      setError("Código inválido. Debe tener 9 o 10 caracteres alfanuméricos.");
       setLoading(false);
       return;
     }
@@ -82,7 +83,7 @@ export function CodeInputFC({ onSuccess }) { // Recibimos onSuccess como prop
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               disabled={loading}
               className="mb-2"
-              maxLength={9}
+              maxLength={10} // <-- Ajustado para permitir hasta 10 caracteres
             />
             {error && <div className="text-danger mb-2 small">{error}</div>}
             {success && <Alert variant="success" className="py-2 small">{success}</Alert>}
