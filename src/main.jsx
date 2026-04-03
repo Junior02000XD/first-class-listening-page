@@ -21,12 +21,18 @@ import { CursoItem } from './CursoItem.jsx';
 import { PerfilUsuario } from './PerfilUsuario.jsx';
 import { Panel } from './Panel.jsx';
 import { NotFoundPage } from './NotFoundPage.jsx';
+// --- NUEVO COMPONENTE DE RECUPERACIÓN ---
+import { ResetPassword } from './ResetPassword.jsx';
 
 // CONFIGURACIÓN DE RUTAS
 const router = createBrowserRouter([
   { path: "/", element: <App /> },
   { path: "/Cursos", element: <Cursos /> },
   { path: "/Login", element: <Login /> },
+  
+  // NUEVA RUTA: Pública, para que el usuario pueda cambiar su contraseña
+  { path: "/reset-password", element: <ResetPassword /> },
+  
   { path: "/Cursos/:id", element: <CursoItem /> },
   { 
     path: "/Perfil", 
@@ -44,7 +50,7 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ) 
   },
-  { path: "*", element: <NotFoundPage /> }
+  { path: "*", element: <NotFoundPage /> } // Esta siempre debe ir al final
 ]);
 
 createRoot(document.getElementById('root')).render(

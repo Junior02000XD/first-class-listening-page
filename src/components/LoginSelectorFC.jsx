@@ -1,20 +1,19 @@
 import { useCallback, useEffect, useState, useContext } from "react";
-import { Container, Card, Button, Form, Spinner, Row, Col } from "react-bootstrap";
+import { Container, Card, Button, Form, Spinner, Row, Col, Alert, InputGroup } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext.jsx";
 import { jwtDecode } from "jwt-decode";
 import api from "../api/axios";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
-import { InputGroup } from "react-bootstrap";
 
 export function LoginSelectorFC() {
   const { login } = useContext(AuthContext);
-  const [view, setView] = useState("selector");
+  const [view, setView] = useState("selector"); // "selector" | "login" | "register" | "forgotPassword"
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   
-  // Estado ampliado para el registro completo
   const [formData, setFormData] = useState({ 
     email: "", 
     password: "",
@@ -23,7 +22,7 @@ export function LoginSelectorFC() {
     apellido: "",
     pais: "",
     ciudad: "",
-    fechaNacimiento: "" // Formato YYYY-MM-DD
+    fechaNacimiento: "" 
   });
   
   const navigate = useNavigate();
@@ -39,8 +38,8 @@ export function LoginSelectorFC() {
         nombre: decoded.given_name || "Usuario",
         apellido: decoded.family_name || "Google",
         email: decoded.email,
-        valor: response.credential, // El GoogleId o Token
-        tipo: 1, // TipoCredencial.Google
+        valor: response.credential, 
+        tipo: 1, 
         pais: "N/A",
         ciudad: "N/A"
       });
@@ -53,7 +52,7 @@ export function LoginSelectorFC() {
     } finally {
       setLoading(false);
     }
-}, [login, pendingCode, navigate]);
+  }, [login, pendingCode, navigate]);
 
   useEffect(() => {
     const renderGoogleButton = () => {
@@ -87,17 +86,17 @@ export function LoginSelectorFC() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccessMsg("");
 
-    // Validación de coincidencia de contraseña en registro
     if (view === "register" && formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden.");
+      setLoading(false);
       return;
     }
     
     try {
        const endpoint = view === "login" ? "/usuarios/login" : "/usuarios/register";
        
-       // Construcción del Payload según tu DTO de C#
        const payload = view === "login" 
            ? { email: formData.email, valor: formData.password, tipo: 0 } 
            : { 
@@ -105,82 +104,119 @@ export function LoginSelectorFC() {
                apellido: formData.apellido,
                pais: formData.pais,
                ciudad: formData.ciudad,
-               fechaCumpleaños: formData.fechaNacimiento, // Mapeado a tu DTO
-               rol: 2, // User
+               fechaCumpleaños: formData.fechaNacimiento,
+               rol: 2, 
                email: formData.email,
                valor: formData.password,
-               tipo: 0 // Local
+               tipo: 0 
              };
        
        const res = await api.post(endpoint, payload);
        
-       // 1. Iniciar sesión globalmente
        login(res.data);
 
-       // 2. Canje automático si existe código pendiente
        if (pendingCode) {
          try {
            await api.post(`/codigos/canjear/${pendingCode}`);
          } catch (redeemErr) {
            console.error("Error al canjear código tras registro:", redeemErr);
-           // Nota: El usuario ya está logueado, el canje falló pero la sesión es válida
          }
        }
        
        navigate("/cursos");
     } catch (err) {
        setError(err.response?.data?.mensaje || "Error en la operación. Revisa los datos.");
-    } finally { setLoading(false); }
+    } finally { 
+       setLoading(false); 
+    }
   };
 
-  if (view === "selector") {
-    return (
-      <Container className="d-flex justify-content-center my-5">
-        <Card className="login-card p-4 text-center" style={{ maxWidth: '400px', width: '100%' }}>
-          <h4 className="mb-4 fw-bold">Inicia sesión</h4>
-          <Button variant="primary" className="w-100 mb-2" onClick={() => setView("login")}>
-            Iniciar sesión con correo
-          </Button>
-          <Button variant="outline-primary" className="w-100 mb-3" onClick={() => setView("register")}>
-            Crear cuenta nueva
-          </Button>
-          <div className="divider my-3"><span>o</span></div>
-          <div className="d-flex justify-content-center">
-            <div id="googleBtn" style={{ width: '100%' }}></div>
-          </div>
-          {loading && <Spinner animation="border" size="sm" className="mt-2" />}
-          {error && <p className="text-danger small mt-2">{error}</p>}
-        </Card>
-      </Container>
-    );
-  }
+  // NUEVO: Función para manejar el envío del correo de recuperación
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccessMsg("");
+
+    try {
+      // Necesitarás crear este endpoint en tu backend de C#
+      await api.post("/usuarios/recuperar-password", { email: formData.email });
+      setSuccessMsg("Si el correo existe, hemos enviado un enlace para restablecer tu contraseña.");
+    } catch (err) {
+      setError(err.response?.data?.mensaje || "No se pudo procesar la solicitud.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función auxiliar para cambiar de vistas y limpiar errores
+  const cambiarVista = (nuevaVista) => {
+    setView(nuevaVista);
+    setError("");
+    setSuccessMsg("");
+    setShowPassword(false);
+  };
 
   return (
     <Container className="d-flex justify-content-center my-5">
-      <Card className="login-card p-4 shadow-sm" style={{ maxWidth: view === "selector" ? '400px' : '450px', width: '100%' }}>
+      <Card className="login-card p-4 shadow-sm" style={{ maxWidth: view === "selector" ? '400px' : '450px', width: '100%', transition: 'max-width 0.3s ease' }}>
+        
+        {/* BOTÓN VOLVER (Oculto en el selector) */}
         {view !== "selector" && (
-          <Button variant="link" className="p-0 mb-3 text-decoration-none text-muted" onClick={() => {setView("selector"); setError(""); setShowPassword(false);}}>
+          <Button variant="link" className="p-0 mb-3 text-decoration-none text-muted-custom text-start" onClick={() => cambiarVista("selector")}>
             ← Volver
           </Button>
         )}
 
+        {/* TÍTULO DINÁMICO */}
         <h4 className="mb-4 fw-bold text-center">
-          {view === "selector" ? "Inicia sesión" : view === "login" ? "¡Hola de nuevo!" : "Crea tu cuenta"}
+          {view === "selector" && "Inicia sesión"}
+          {view === "login" && "¡Hola de nuevo!"}
+          {view === "register" && "Crea tu cuenta"}
+          {view === "forgotPassword" && "Recuperar Contraseña"}
         </h4>
 
-        {view === "selector" ? (
+        {/* MENSAJES DE ÉXITO O ERROR GLOBALES */}
+        {error && <Alert variant="danger" className="small py-2">{error}</Alert>}
+        {successMsg && <Alert variant="success" className="small py-2">{successMsg}</Alert>}
+
+        {/* VISTA 1: SELECTOR PRINCIPAL */}
+        {view === "selector" && (
           <>
-            <Button variant="primary" className="w-100 mb-2 py-2 fw-bold" onClick={() => setView("login")}>
+            <Button variant="primary" className="w-100 mb-2 py-2 fw-bold" onClick={() => cambiarVista("login")}>
               Iniciar sesión con correo
             </Button>
-            <Button variant="outline-primary" className="w-100 mb-3 py-2 fw-bold" onClick={() => setView("register")}>
+            <Button variant="outline-primary" className="w-100 mb-3 py-2 fw-bold" onClick={() => cambiarVista("register")}>
               Crear cuenta nueva
             </Button>
             <div className="divider my-3"><span>o</span></div>
             <div id="googleBtn" className="d-flex justify-content-center" style={{ width: '100%' }}></div>
           </>
-        ) : (
+        )}
+
+        {/* VISTA 2: FORMULARIO DE RECUPERACIÓN DE CONTRASEÑA */}
+        {view === "forgotPassword" && (
+          <Form onSubmit={handleForgotPassword}>
+            <p className="text-muted small text-center mb-3">
+              Ingresa tu correo electrónico y te enviaremos las instrucciones para crear una nueva contraseña.
+            </p>
+            <Form.Control 
+              type="email" 
+              placeholder="Tu correo electrónico" 
+              className="mb-3" 
+              required 
+              onChange={e => setFormData({...formData, email: e.target.value})} 
+            />
+            <Button variant="primary" type="submit" className="w-100 fw-bold py-2" disabled={loading}>
+              {loading ? <Spinner animation="border" size="sm" /> : "Enviar enlace"}
+            </Button>
+          </Form>
+        )}
+
+        {/* VISTAS 3 Y 4: LOGIN Y REGISTRO */}
+        {(view === "login" || view === "register") && (
           <Form onSubmit={handleSubmit}>
+            {/* Campos exclusivos de Registro */}
             {view === "register" && (
               <>
                 <Row className="mb-2 g-2">
@@ -198,11 +234,18 @@ export function LoginSelectorFC() {
               </>
             )}
 
-            <Form.Control type="email" placeholder="Email" className="mb-2" required onChange={e => setFormData({...formData, email: e.target.value})} />
+            {/* Email (Compartido) */}
+            <Form.Control 
+              type="email" 
+              placeholder="Email" 
+              className="mb-2" 
+              required 
+              onChange={e => setFormData({...formData, email: e.target.value})} 
+            />
             
-             {/* Input con Ojo para mostrar contraseña */}
-            <Form.Group className="mb-2">
-              <div className="input-group">
+            {/* Contraseña (Compartida) */}
+            <Form.Group className={view === "login" ? "mb-1" : "mb-2"}>
+              <InputGroup>
                 <Form.Control 
                   type={showPassword ? "text" : "password"} 
                   placeholder="Contraseña" 
@@ -212,13 +255,22 @@ export function LoginSelectorFC() {
                 <Button 
                   variant="outline-secondary" 
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
                 >
                   {showPassword ? <EyeSlash size={18}/> : <Eye size={18}/>}
                 </Button>
-              </div>
+              </InputGroup>
             </Form.Group>
 
+            {/* Enlace de recuperación exclusivo de Login */}
+            {view === "login" && (
+              <div className="text-end mb-3">
+                <Button variant="link" className="p-0 small text-decoration-none" onClick={() => cambiarVista("forgotPassword")}>
+                  ¿Olvidaste tu contraseña?
+                </Button>
+              </div>
+            )}
+
+            {/* Confirmar contraseña exclusivo de Registro */}
             {view === "register" && (
               <Form.Control 
                 type="password" 
@@ -228,8 +280,6 @@ export function LoginSelectorFC() {
                 onChange={e => setFormData({...formData, confirmPassword: e.target.value})} 
               />
             )}
-            
-            {error && <p className="text-danger small text-center">{error}</p>}
             
             <Button variant="primary" type="submit" className="w-100 fw-bold py-2 mt-2" disabled={loading}>
               {loading ? <Spinner animation="border" size="sm" /> : (view === "login" ? "Entrar" : "Registrarme")}
