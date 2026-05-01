@@ -220,9 +220,9 @@ export function CursoItem() {
                         ) : (
                             // ESTADO: SIN ACCESO
                             <Row className="justify-content-center mt-4">
-                                <Col md={8} lg={6}>
-                                    <Card className="p-5 text-center shadow-lg" style={glassCardStyle}>
-                                        <div className="mb-4">
+                                <Col md={10} lg={8}>
+                                    <Card className="p-4 p-md-5 text-center shadow-lg border-0" style={glassCardStyle}>
+                                        <div className="mb-2">
                                             <h1 style={{ fontSize: '4rem' }}>🔒</h1>
                                             <h3 className="fw-bold mt-3" style={{ color: '#DEB831' }}>Acceso Restringido</h3>
                                             <p style={{ color: 'rgba(255,255,255,0.8)' }}>
@@ -230,8 +230,8 @@ export function CursoItem() {
                                             </p>
                                         </div>
                                         
-                                        {/* Suponiendo que CodeInputFC tiene sus propios estilos, lo envolvemos en un div para darle margen */}
-                                        <div className="p-3 rounded-4 bg-light shadow-inner">
+                                        {/* ¡Adiós bg-light! Ahora se integra limpio con el fondo de cristal */}
+                                        <div className="mt-2">
                                             <CodeInputFC onSuccess={cargarDetalle} />
                                         </div>
                                     </Card>
