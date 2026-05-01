@@ -59,14 +59,13 @@ export function RootPanelFC() {
     // ---------------------------------------------------------
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
-        setUploadMsg({ text: "", type: "" }); // Limpiamos mensajes previos
+        setUploadMsg({ text: "", type: "" }); 
 
         if (selectedFile) {
-            // Validación rápida de extensión en el Frontend
             if (!selectedFile.name.toLowerCase().endsWith('.xlsx')) {
                 setUploadMsg({ text: "Por favor, selecciona un archivo válido (.xlsx)", type: "danger" });
                 setFile(null);
-                e.target.value = null; // Resetea el input
+                e.target.value = null; 
                 return;
             }
             setFile(selectedFile);
@@ -79,22 +78,19 @@ export function RootPanelFC() {
         setUploadLoading(true);
         setUploadMsg({ text: "", type: "" });
 
-        // FormData es obligatorio para enviar archivos
         const formData = new FormData();
-        // IMPORTANTE: "archivo" debe llamarse igual que en el backend [HttpPost] IFormFile archivo
         formData.append("archivo", file); 
 
         try {
             const res = await api.post("/codigos/importar-excel", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                    // Authorization ya debería ir implícito si configuras interceptores en api/axios.js
                 },
             });
             
             setUploadMsg({ text: res.data.mensaje, type: "success" });
-            setFile(null); // Limpiamos el archivo subido
-            document.getElementById("excel-upload-input").value = ""; // Limpiamos visualmente el input
+            setFile(null); 
+            document.getElementById("excel-upload-input").value = ""; 
         } catch (err) {
             setUploadMsg({ 
                 text: err.response?.data?.mensaje || "Error interno al subir el archivo.", 
@@ -105,20 +101,43 @@ export function RootPanelFC() {
         }
     };
 
+    // --- ESTILOS COMPARTIDOS ---
+    const cardStyle = {
+        backgroundColor: 'rgba(0, 0, 0, 0.25)', 
+        backdropFilter: 'blur(12px)', 
+        color: '#FFFFFF',
+        borderRadius: '16px'
+    };
+
+    const inputStyle = {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        color: '#2E1572',
+        border: 'none'
+    };
+
+    const btnPrimaryStyle = {
+        backgroundColor: '#DEB831',
+        borderColor: '#DEB831',
+        color: '#2E1572',
+        fontWeight: 'bold'
+    };
+
     return (
-        <Card className="p-4 shadow-sm border-0 admin-card">
+        <Card className="p-4 shadow-lg border-0 h-100 mt-4" style={cardStyle}>
             {/* SECCIÓN 1: GENERADOR DE CÓDIGOS NUEVOS */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="fw-bold mb-0">Generador Masivo de Códigos</h5>
-                <Badge bg="primary">Acceso Root</Badge>
+                <h5 className="fw-bold mb-0" style={{ color: '#DEB831' }}>Generador Masivo de Códigos</h5>
+                <Badge bg="danger" className="px-3 py-2 shadow-sm border border-light">Acceso Root</Badge>
             </div>
 
             <Form className="mb-4">
                 <Row className="g-3">
                     <Col md={7}>
                         <Form.Group>
-                            <Form.Label className="small fw-bold">1. Curso a vincular</Form.Label>
+                            <Form.Label className="small fw-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>1. Curso a vincular</Form.Label>
                             <Form.Select 
+                                className="py-2 shadow-sm"
+                                style={inputStyle}
                                 value={seleccion.cursoId}
                                 onChange={e => setSeleccion({...seleccion, cursoId: e.target.value})}
                             >
@@ -129,11 +148,13 @@ export function RootPanelFC() {
                     </Col>
                     <Col md={5}>
                         <Form.Group>
-                            <Form.Label className="small fw-bold">2. Cantidad</Form.Label>
+                            <Form.Label className="small fw-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>2. Cantidad</Form.Label>
                             <Form.Control 
                                 type="number" 
                                 min="1" 
                                 max="500"
+                                className="py-2 shadow-sm"
+                                style={inputStyle}
                                 value={seleccion.cantidad} 
                                 onChange={e => setSeleccion({...seleccion, cantidad: e.target.value})} 
                             />
@@ -141,40 +162,41 @@ export function RootPanelFC() {
                     </Col>
                 </Row>
                 <Button 
-                    className="mt-3 w-100 fw-bold" 
-                    variant="dark"
+                    className="mt-4 w-100 py-2 shadow-sm" 
+                    style={btnPrimaryStyle}
                     onClick={generarCodigos} 
                     disabled={loading || !seleccion.cursoId}
                 >
                     {loading ? <Spinner size="sm" className="me-2" /> : null}
-                    {loading ? "Generando en Railway..." : "Generar y Guardar en BD"}
+                    {loading ? "Generando en Railway..." : "⚡ Generar y Guardar en BD"}
                 </Button>
             </Form>
 
             {codigos.length > 0 && (
-                <div className="mt-2 mb-5 animate__animated animate__fadeIn">
-                    <div className="d-flex justify-content-between align-items-end mb-2">
-                        <h6 className="fw-bold mb-0 text-muted-custom">Previsualización:</h6>
-                        <Button variant="success" size="sm" onClick={descargarCSV} className="fw-bold">
-                            Descargar .CSV para Excel
+                <div className="mt-4 mb-5 animate__animated animate__fadeIn">
+                    <div className="d-flex justify-content-between align-items-end mb-3">
+                        <h6 className="fw-bold mb-0" style={{ color: 'rgba(255,255,255,0.8)' }}>Previsualización:</h6>
+                        <Button variant="success" size="sm" onClick={descargarCSV} className="fw-bold shadow-sm px-3 border-0">
+                            📥 Descargar .CSV para Excel
                         </Button>
                     </div>
                     
-                    <div className="custom-scroll border rounded bg-light" style={{ maxHeight: "300px", overflowY: "auto" }}>
-                        <Table striped hover responsive className="mb-0 small">
-                            <thead className="table-dark">
+                    {/* Tabla rediseñada para modo oscuro */}
+                    <div className="rounded overflow-hidden shadow-sm" style={{ maxHeight: "300px", overflowY: "auto", backgroundColor: 'rgba(0,0,0,0.15)' }}>
+                        <Table variant="dark" hover responsive className="mb-0 small align-middle" style={{ backgroundColor: 'transparent' }}>
+                            <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
                                 <tr>
-                                    <th style={{ width: '50px' }}>#</th>
-                                    <th>Código Generado</th>
-                                    <th>Estado</th>
+                                    <th style={{ width: '60px', backgroundColor: '#1a0b40', color: '#DEB831' }} className="border-0 text-center">#</th>
+                                    <th style={{ backgroundColor: '#1a0b40', color: '#DEB831' }} className="border-0">Código Generado</th>
+                                    <th style={{ backgroundColor: '#1a0b40', color: '#DEB831' }} className="border-0 text-center">Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {codigos.map((c, i) => (
                                     <tr key={i}>
-                                        <td>{i + 1}</td>
-                                        <td><code className="text-primary fw-bold">{c}</code></td>
-                                        <td><Badge bg="info" className="text-white">Listo</Badge></td>
+                                        <td className="text-center border-dark" style={{ color: 'rgba(255,255,255,0.5)' }}>{i + 1}</td>
+                                        <td className="border-dark"><code className="fw-bold" style={{ color: '#DEB831', fontSize: '1rem' }}>{c}</code></td>
+                                        <td className="text-center border-dark"><Badge bg="success" className="text-white">Listo</Badge></td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -183,22 +205,24 @@ export function RootPanelFC() {
                 </div>
             )}
 
-            <hr className="my-5" />
+            <hr style={{ borderColor: 'rgba(255,255,255,0.2)' }} className="my-5" />
 
             {/* SECCIÓN 2: IMPORTADOR DE CÓDIGOS ANTIGUOS (MIGRACIÓN) */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h5 className="fw-bold mb-0">Importar Códigos de Migración</h5>
-                <Badge bg="warning" text="dark">Solo formato .xlsx</Badge>
+                <h5 className="fw-bold mb-0" style={{ color: '#DEB831' }}>Importar Códigos de Migración</h5>
+                <Badge bg="warning" text="dark" className="px-3 py-2 shadow-sm">Solo formato .xlsx</Badge>
             </div>
 
             <Form>
                 <Row className="g-3 align-items-end">
                     <Col md={9}>
                         <Form.Group>
-                            <Form.Label className="small fw-bold">Selecciona el archivo Excel</Form.Label>
+                            <Form.Label className="small fw-bold" style={{ color: 'rgba(255,255,255,0.8)' }}>Selecciona el archivo Excel</Form.Label>
                             <Form.Control 
                                 type="file" 
                                 accept=".xlsx" 
+                                className="py-2 shadow-sm"
+                                style={{ ...inputStyle, cursor: 'pointer' }}
                                 onChange={handleFileChange}
                                 id="excel-upload-input"
                                 disabled={uploadLoading}
@@ -207,8 +231,8 @@ export function RootPanelFC() {
                     </Col>
                     <Col md={3}>
                         <Button 
-                            variant="success" 
-                            className="w-100 fw-bold" 
+                            className="w-100 fw-bold py-2 shadow-sm" 
+                            style={{ backgroundColor: '#2E1572', borderColor: '#DEB831', color: '#DEB831', borderWidth: '2px' }}
                             onClick={importarExcel}
                             disabled={!file || uploadLoading}
                         >
@@ -217,18 +241,16 @@ export function RootPanelFC() {
                         </Button>
                     </Col>
                 </Row>
-                <Form.Text className="text-muted-custom">
-                    El Excel debe tener la primera fila con los títulos: <strong>Codigo</strong> y <strong>CursoId</strong>.
+                <Form.Text className="mt-3 d-block" style={{ color: 'rgba(255,255,255,0.6)' }}>
+                    El Excel debe tener la primera fila con los títulos: <strong className="text-white">Codigo</strong> y <strong className="text-white">CursoId</strong>.
                 </Form.Text>
 
                 {uploadMsg.text && (
-                    <Alert variant={uploadMsg.type} className="mt-3 small py-2">
+                    <Alert variant={uploadMsg.type} className="mt-4 small py-2 border-0 shadow-sm text-center fw-bold">
                         {uploadMsg.text}
                     </Alert>
                 )}
-                
             </Form>
-
         </Card>
     );
 }

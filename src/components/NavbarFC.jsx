@@ -1,3 +1,4 @@
+import { useState, useEffect, useContext } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
@@ -5,39 +6,49 @@ import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
+import './NavbarCustom.css'; // Asegúrate de crear/tener este archivo
 
 export function NavbarFC() {
-  // Extraemos isAdmin e isRoot del contexto actualizado
   const { user, logout, isAuthenticated, isAdmin } = useContext(AuthContext);
   const navigate = useNavigate();
+  
+  // Estado para detectar el scroll
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Si bajamos más de 50px, activamos el fondo
+      setScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
-    navigate("/"); // Redirigir al home tras cerrar sesión
+    navigate("/");
   };
 
   return (
-    <Navbar expand="lg" className="navbar-custom">
+    <Navbar expand="lg" sticky="top" className={`navbar-custom ${scrolled ? 'navbar-scrolled' : ''}`}>
       <Container>
-        <Navbar.Brand as={Link} to="/" className='navbar-title'>First Class</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/" className='navbar-title text-white fw-bold'>First Class</Navbar.Brand>
 
-        <Navbar.Toggle aria-controls="navbar-nav" />
+        <Navbar.Toggle aria-controls="navbar-nav" className="bg-light" />
 
         <Navbar.Collapse id="navbar-nav" className='navbar-navigation'>
           <Nav className="me-auto">
-            <Nav.Link as={NavLink} to="/" >Home</Nav.Link>
-            <Nav.Link as={NavLink} to="/Cursos">Audios</Nav.Link>
+            <Nav.Link as={NavLink} to="/" className="text-white">Home</Nav.Link>
+            <Nav.Link as={NavLink} to="/Cursos" className="text-white">Audios y Videos</Nav.Link>
             
-            {/* Solo mostramos el link de Login si NO está autenticado */}
             {!isAuthenticated && (
-              <Nav.Link as={NavLink} to="/login">Login</Nav.Link>
+              <Nav.Link as={NavLink} to="/login" className="text-white">Login</Nav.Link>
             )}
 
-            {/* OPCIÓN PARA ADMINS: Se activa solo si es Admin o Root */}
             {isAdmin && (
-              <Nav.Link as={NavLink} to="/Panel" className="text-warning">
+              <Nav.Link as={NavLink} to="/Panel" className="text-warning fw-bold">
                 Panel Admin
               </Nav.Link>
             )}
@@ -45,34 +56,20 @@ export function NavbarFC() {
 
           {isAuthenticated ? (
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="dropdown-basic" className='user-dropdown'>
-                {/* Usamos 'nombre' porque así viene de tu API de C# */}
+              <Dropdown.Toggle variant="outline-light" id="dropdown-basic" className='user-dropdown'>
                 Hola, {user?.nombre || "Usuario"}
               </Dropdown.Toggle>
-              <Dropdown.Menu className='menu-dropdown-custom' align="end">
-                <Dropdown.Item as={Link} to="/Cursos" className='dropdown-item-custom'>
-                  Mis Cursos
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/Perfil" className='dropdown-item-custom'>
-                  Perfil
-                </Dropdown.Item>
-                
+              <Dropdown.Menu className='menu-dropdown-custom shadow' align="end">
+                <Dropdown.Item as={Link} to="/Cursos" className='dropdown-item-custom'>Mis Cursos</Dropdown.Item>
+                <Dropdown.Item as={Link} to="/Perfil" className='dropdown-item-custom'>Perfil</Dropdown.Item>
                 <Dropdown.Divider />
-                
-                <Dropdown.Item onClick={handleLogout} className='dropdown-item-custom text-danger'>
-                  Log Out
-                </Dropdown.Item>
+                <Dropdown.Item onClick={handleLogout} className='dropdown-item-custom text-danger'>Log Out</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           ) : (
             <Nav className="gap-2">
-              {/* Botón simplificado: ahora ambos llevan al Login/Register real */}
-              <Button variant="outline-secondary" onClick={() => navigate("/login")}>
-                Log In
-              </Button>
-              <Button variant="primary" onClick={() => navigate("/login")}>
-                Sign Up
-              </Button>
+              <Button variant="outline-light" onClick={() => navigate("/login")}>Log In</Button>
+              <Button variant="warning" onClick={() => navigate("/login")} style={{backgroundColor: '#DEB831', borderColor: '#DEB831', color: '#2E1572', fontWeight: 'bold'}}>Sign Up</Button>
             </Nav>
           )}
         </Navbar.Collapse>

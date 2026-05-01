@@ -4,7 +4,7 @@ import NavbarFC from "./components/NavbarFC";
 import FooterFC from "./components/FooterFC";
 import CodeInputFC from "./components/CodeInputFC"; 
 import api from "./api/axios"; 
-import { Spinner } from "react-bootstrap";
+import { Spinner, Container, Row, Col, Card, Button } from "react-bootstrap";
 import './CursoItem.css';
 
 export function CursoItem() {
@@ -12,9 +12,9 @@ export function CursoItem() {
     const navigate = useNavigate();
 
     const [curso, setCurso] = useState(null);
-    const [contenidos, setContenidos] = useState([]); // Antes 'audios'
+    const [contenidos, setContenidos] = useState([]);
     const [courseToken, setCourseToken] = useState("");
-    const [itemActivo, setItemActivo] = useState(null); // Antes 'audioActivo'
+    const [itemActivo, setItemActivo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [tieneAcceso, setTieneAcceso] = useState(false);
 
@@ -23,7 +23,6 @@ export function CursoItem() {
     const cargarDetalle = useCallback(async () => {
         setLoading(true);
         try {
-            // Actualizado a la nueva ruta genérica de contenido
             const res = await api.get(`/contenido-access/curso/${id}`);
             
             setCurso({
@@ -31,7 +30,7 @@ export function CursoItem() {
                 titulo: res.data.titulo,
                 img: res.data.imagenUrl
             });
-            setContenidos(res.data.contenidos || []); // Usamos la nueva propiedad 'contenidos'
+            setContenidos(res.data.contenidos || []); 
             setCourseToken(res.data.token);
             setTieneAcceso(true); 
 
@@ -63,7 +62,6 @@ export function CursoItem() {
     const handleDownload = async () => {
         if (!itemActivo) return;
         try {
-            // Actualizado a la ruta genérica de descarga
             const res = await api.post(`/contenido-access/descargar/${itemActivo.id}`);
             window.location.href = res.data.url;
 
@@ -78,100 +76,169 @@ export function CursoItem() {
         }
     };
 
-    if (loading) return <div className="text-center my-5"><Spinner animation="border" variant="primary" /></div>;
+    // --- ESTILOS COMPARTIDOS ---
+    const glassCardStyle = {
+        backgroundColor: 'rgba(0, 0, 0, 0.25)', 
+        backdropFilter: 'blur(12px)', 
+        color: '#FFFFFF',
+        borderRadius: '16px',
+        border: 'none'
+    };
+
+    const btnActiveStyle = {
+        backgroundColor: '#DEB831',
+        color: '#2E1572',
+        border: 'none',
+        fontWeight: 'bold',
+        transition: 'all 0.3s ease'
+    };
+
+    const btnInactiveStyle = {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        color: '#FFFFFF',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        transition: 'all 0.3s ease'
+    };
+
+    if (loading) return (
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+            <Spinner animation="border" style={{ color: '#DEB831' }} />
+        </div>
+    );
 
     return (
         <>
             <NavbarFC />
 
             {curso && (
-                <div className="course-audio-page">
-                    <div className="text-center mb-5 course-header-custom">
-                        <img src={curso.img} alt={curso.titulo} className="img-fluid course-cover-custom" />
-                        <h2 className="mt-3 course-title-custom">{curso.titulo}</h2>
+                <div className="course-audio-page pb-5 animate__animated animate__fadeIn" style={{ minHeight: '85vh' }}>
+                    
+                    {/* ENCABEZADO DEL CURSO */}
+                    <div className="text-center py-5 mb-4" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}>
+                        <Container>
+                            <img 
+                                src={curso.img} 
+                                alt={curso.titulo} 
+                                className="img-fluid shadow-lg rounded-3 mb-4" 
+                                style={{ maxHeight: '250px', objectFit: 'cover', border: '3px solid #DEB831' }} 
+                            />
+                            <h1 className="fw-bold" style={{ color: '#DEB831', fontFamily: '"Baloo 2", sans-serif' }}>
+                                {curso.titulo}
+                            </h1>
+                        </Container>
                     </div>
 
-                    <div className="container">
+                    <Container>
                         {tieneAcceso ? (
-                            <div className="row g-4">
-                                <div className="col-12 col-md-8">
+                            <Row className="g-4">
+                                {/* REPRODUCTOR PRINCIPAL */}
+                                <Col xs={12} md={8}>
                                     {itemActivo ? (
-                                        <div className="card p-3 audio-player-box h-100 shadow-sm">
-                                            <h6 className="mb-3 audio-title fw-bold">
+                                        <Card className="p-4 h-100 shadow-lg" style={glassCardStyle}>
+                                            <h4 className="mb-4 fw-bold" style={{ color: '#DEB831' }}>
                                                 {itemActivo.tipo === 1 ? "🎥 " : "🎧 "} {itemActivo.titulo}
-                                            </h6>
+                                            </h4>
                                             
-                                            {/* REPRODUCTOR HÍBRIDO */}
-                                            <div className="media-wrapper rounded overflow-hidden mb-3">
+                                            <div className="media-wrapper rounded overflow-hidden mb-4 shadow-sm" style={{ backgroundColor: '#000' }}>
                                                 {itemActivo.tipo === 1 ? (
                                                     <video
                                                         key={itemActivo.id}
                                                         controls
                                                         controlsList="nodownload"
-                                                        //Asegurar la reproduccion y evitar bloqueos por el navegador
                                                         crossOrigin="anonymous"
-                                                        // El preload="metadata" ayuda a que el streaming de 1GB sea fluido
                                                         preload="metadata"
                                                         src={`${WORKER_URL}/?id=${itemActivo.id}&token=${encodeURIComponent(courseToken)}`}
                                                         className="w-100"
                                                         autoPlay
+                                                        style={{ outline: 'none' }}
                                                     />
                                                 ) : (
                                                     <audio
                                                         key={itemActivo.id}
                                                         controls
                                                         src={`${WORKER_URL}/?id=${itemActivo.id}&token=${encodeURIComponent(courseToken)}`}
-                                                        className="w-100 mt-2"
+                                                        className="w-100"
                                                         autoPlay
+                                                        style={{ outline: 'none' }}
                                                     />
                                                 )}
                                             </div>
 
-                                            <button 
-                                                className="btn btn-sm audio-download-btn fw-bold w-100" 
-                                                onClick={handleDownload}
-                                                disabled={(itemActivo.descargasHechas || 0) >= 3}
-                                            >
-                                                {(itemActivo.descargasHechas || 0) >= 3 ? "Límite alcanzado" : `Descargar ${itemActivo.tipo === 1 ? 'Video' : 'Audio'}`}
-                                            </button>
-                                            <small className="counter-downloads mt-2 d-block text-center">
-                                                Descargas restantes: {Math.max(0, 3 - (itemActivo.descargasHechas || 0))}
-                                            </small>
-                                        </div>
+                                            <div className="mt-auto pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.1) !important' }}>
+                                                <Button 
+                                                    className="w-100 py-2 shadow-sm" 
+                                                    style={btnActiveStyle}
+                                                    onClick={handleDownload}
+                                                    disabled={(itemActivo.descargasHechas || 0) >= 3}
+                                                >
+                                                    {(itemActivo.descargasHechas || 0) >= 3 
+                                                        ? "🚫 Límite de descargas alcanzado" 
+                                                        : `⬇️ Descargar ${itemActivo.tipo === 1 ? 'Video' : 'Audio'}`}
+                                                </Button>
+                                                <small className="d-block text-center mt-2" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                                                    Descargas restantes: <strong>{Math.max(0, 3 - (itemActivo.descargasHechas || 0))}</strong>
+                                                </small>
+                                            </div>
+                                        </Card>
                                     ) : (
-                                        <div className="card p-4 text-center audio-player-box h-100 d-flex align-items-center justify-content-center">
-                                            <p className="mb-0 text-audio-alert">Selecciona una lección para comenzar 🎧🎥</p>
-                                        </div>
+                                        <Card className="p-5 text-center h-100 d-flex align-items-center justify-content-center shadow-lg" style={glassCardStyle}>
+                                            <div className="opacity-75">
+                                                <h1 className="display-4 mb-3" style={{ color: '#DEB831' }}>🎬</h1>
+                                                <h4 style={{ color: 'rgba(255,255,255,0.9)' }}>Selecciona una lección para comenzar</h4>
+                                                <p style={{ color: 'rgba(255,255,255,0.6)' }}>El contenido aparecerá aquí.</p>
+                                            </div>
+                                        </Card>
                                     )}
-                                </div>
+                                </Col>
 
-                                <div className="col-12 col-md-4">
-                                    <div className="card p-3 audio-list h-100 shadow-sm">
-                                        <h5 className="mb-3 audio-item fw-bold">Contenido del curso</h5>
-                                        <div className="d-flex flex-column gap-2 audio-buttons">
+                                {/* LISTA DE CONTENIDO */}
+                                <Col xs={12} md={4}>
+                                    <Card className="p-4 h-100 shadow-lg" style={glassCardStyle}>
+                                        <h5 className="mb-4 fw-bold border-bottom pb-2" style={{ color: '#DEB831', borderColor: 'rgba(222,184,49,0.3) !important' }}>
+                                            Contenido del curso
+                                        </h5>
+                                        <div className="d-flex flex-column gap-2" style={{ overflowY: 'auto', maxHeight: '500px', paddingRight: '5px' }}>
                                             {contenidos.map((item) => (
-                                                <button
+                                                <Button
                                                     key={item.id}
-                                                    className={`btn btn-sm text-start btn-custom d-flex justify-content-between align-items-center ${itemActivo?.id === item.id ? "btn-primary text-white" : "btn-outline-secondary"}`}
+                                                    className="d-flex justify-content-between align-items-center text-start px-3 py-3 shadow-sm"
+                                                    style={itemActivo?.id === item.id ? btnActiveStyle : btnInactiveStyle}
                                                     onClick={() => setItemActivo(item)}
                                                 >
-                                                    <span className="text-truncate" style={{maxWidth: '85%'}}>{item.titulo}</span>
-                                                    <span>{item.tipo === 1 ? "🎥" : "🎧"}</span>
-                                                </button>
+                                                    <span className="text-truncate fw-medium" style={{ maxWidth: '85%' }}>
+                                                        {item.titulo}
+                                                    </span>
+                                                    <span style={{ opacity: itemActivo?.id === item.id ? 1 : 0.7 }}>
+                                                        {item.tipo === 1 ? "🎥" : "🎧"}
+                                                    </span>
+                                                </Button>
                                             ))}
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    </Card>
+                                </Col>
+                            </Row>
                         ) : (
-                            <div className="text-center py-5">
-                                <div className="alert alert-warning mb-4 shadow-sm">
-                                    No tienes acceso al contenido de este curso. Ingresa tu código para activarlo.
-                                </div>
-                                <CodeInputFC onSuccess={cargarDetalle} />
-                            </div>
+                            // ESTADO: SIN ACCESO
+                            <Row className="justify-content-center mt-4">
+                                <Col md={8} lg={6}>
+                                    <Card className="p-5 text-center shadow-lg" style={glassCardStyle}>
+                                        <div className="mb-4">
+                                            <h1 style={{ fontSize: '4rem' }}>🔒</h1>
+                                            <h3 className="fw-bold mt-3" style={{ color: '#DEB831' }}>Acceso Restringido</h3>
+                                            <p style={{ color: 'rgba(255,255,255,0.8)' }}>
+                                                Para ver y descargar el contenido de este curso, necesitas validarlo con un código de acceso.
+                                            </p>
+                                        </div>
+                                        
+                                        {/* Suponiendo que CodeInputFC tiene sus propios estilos, lo envolvemos en un div para darle margen */}
+                                        <div className="p-3 rounded-4 bg-light shadow-inner">
+                                            <CodeInputFC onSuccess={cargarDetalle} />
+                                        </div>
+                                    </Card>
+                                </Col>
+                            </Row>
                         )}
-                    </div>
+                    </Container>
                 </div>
             )}
             <FooterFC />

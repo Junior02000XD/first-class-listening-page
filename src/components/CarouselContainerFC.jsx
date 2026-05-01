@@ -4,6 +4,8 @@ import { CarouselFC } from './CarouselFC';
 
 export function CarouselContainerFC() {
     const [activeIndex, setActiveIndex] = useState(0);
+    
+    // Si en el futuro agregas más imágenes, solo las pones aquí
     const thumbnails = [
         '/CursosImages/EnglishFirst_1.jpeg',
         '/CursosImages/EnglishFirst_2.jpeg',
@@ -15,12 +17,24 @@ export function CarouselContainerFC() {
     ];
 
   return (
-    <>
-        <div id="BorderCarousel">
-            <CarouselFC activeIndex={activeIndex} setActiveIndex={setActiveIndex} thumbnails={thumbnails} />
+    <div className="carousel-wrapper my-4 animate__animated animate__fadeIn">
+        {/* El CSS de #BorderCarousel hace el marco dorado. Aquí le sumamos la sombra y el fondo */}
+        <div id="BorderCarousel" className="shadow-lg" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+            <CarouselFC 
+                activeIndex={activeIndex} 
+                setActiveIndex={setActiveIndex} 
+                thumbnails={thumbnails} 
+            />
         </div>
-        <CarouselThumbnailsFC activeIndex={activeIndex} setActiveIndex={setActiveIndex} thumbnails={thumbnails} />
-    </>
+        
+        {/* Componente de Miniaturas */}
+        <CarouselThumbnailsFC 
+            activeIndex={activeIndex} 
+            setActiveIndex={setActiveIndex} 
+            thumbnails={thumbnails} 
+        />
+    </div>
   );
 }
+
 export default CarouselContainerFC;

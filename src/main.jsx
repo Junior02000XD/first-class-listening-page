@@ -23,6 +23,9 @@ import { Panel } from './Panel.jsx';
 import { NotFoundPage } from './NotFoundPage.jsx';
 // --- NUEVO COMPONENTE DE RECUPERACIÓN ---
 import { ResetPassword } from './ResetPassword.jsx';
+// --- NUEVOS COMPONENTES DEL FOOTER ---
+import Soporte from './Soporte.jsx';
+import Contacto from './Contacto.jsx';
 
 // CONFIGURACIÓN DE RUTAS
 const router = createBrowserRouter([
@@ -32,6 +35,10 @@ const router = createBrowserRouter([
   
   // NUEVA RUTA: Pública, para que el usuario pueda cambiar su contraseña
   { path: "/reset-password", element: <ResetPassword /> },
+  
+  // NUEVAS RUTAS: Páginas informativas
+  { path: "/Soporte", element: <Soporte /> },
+  { path: "/Contacto", element: <Contacto /> },
   
   { path: "/Cursos/:id", element: <CursoItem /> },
   { 

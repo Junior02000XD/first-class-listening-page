@@ -68,3 +68,28 @@
   background-color: #a0841e !important;
   color: #ffffff !important;
 }
+
+
+/* Estado inicial (transparente, ideal si tu página principal tiene una imagen o fondo oscuro) */
+.navbar-custom {
+  background-color: #2E1572; /* Color base por defecto */
+  transition: all 0.3s ease-in-out;
+  padding: 1rem 0;
+  z-index: 1000;
+}
+
+/* Cuando se hace scroll */
+.navbar-custom.navbar-scrolled {
+  background-color: rgba(46, 21, 114, 0.85); /* #2E1572 con transparencia */
+  backdrop-filter: blur(12px); /* Efecto cristal / vidrio esmerilado */
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.5rem 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  border-bottom: 2px solid #DEB831; /* La línea dorada para dar el toque premium */
+}
+
+/* Detalles para mantener el texto limpio */
+.navbar-custom .nav-link:hover {
+  color: #DEB831 !important;
+  opacity: 0.8;
+}

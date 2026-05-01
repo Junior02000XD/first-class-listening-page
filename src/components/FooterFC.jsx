@@ -1,4 +1,5 @@
 import { Container, Row, Col } from "react-bootstrap";
+import { Link } from "react-router-dom"; // Importante importar Link
 import './FooterCustom.css';
 
 export function FooterFC() {
@@ -17,9 +18,9 @@ export function FooterFC() {
 
           {/* Links */}
           <Col xs={12} md={6} className="text-center text-md-end">
-            <a href="#" className="footer-link me-3">Cursos</a>
-            <a href="#" className="footer-link me-3">Soporte</a>
-            <a href="#" className="footer-link">Contacto</a>
+            <Link to="/Cursos" className="footer-link me-3 text-decoration-none">Cursos</Link>
+            <Link to="/Soporte" className="footer-link me-3 text-decoration-none">Soporte</Link>
+            <Link to="/Contacto" className="footer-link text-decoration-none">Contacto</Link>
           </Col>
 
         </Row>
